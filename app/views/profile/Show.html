@@ -1,0 +1,75 @@
+{{template "header.html" .}}
+
+ <table border="1" style="width:300px">
+<thead>
+<tr>
+<script>
+
+  	//window.alert(supportsLocalStorage());
+</script>
+<th>Stat</th>
+<th>Value</th>
+
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{{.retval.NUMBEROFGAMES.tag}}</td>
+<td>{{.retval.NUMBEROFGAMES.value}}</td>
+
+</tr>
+
+<tr>
+<td>{{.retval.NUMBEROFGAMESWON.tag}}</td>
+<td>{{.retval.NUMBEROFGAMESWON.value}}</td>
+</tr>
+
+<tr>
+<td>{{.retval.TOTALGAMESLOST.tag}}</td>
+<td>{{.retval.TOTALGAMESLOST.value}}</td>
+</tr>
+<tbody>
+
+</table>
+<hr>
+{{if .retval2}}
+<table border="1">
+  <thead>
+    <tr>
+	<th>Game</th>
+      <th>Demolish</th>
+      <th>Won</th>
+      <th>Lost</th>
+      <th>Drop</th>
+    </tr>
+  </thead>
+  <tbody >
+    {{range $key, $value := .retval2}}
+    <tr>
+	<td>{{$key}}</td>
+	{{with $value}} 
+	   {{range $key2, $value2 := $value}}
+	
+     <td> {{if eq $key2 "DEMOLISH"}} {{$value2}} {{end}}</td>
+	 <td> {{if eq $key2 "WON"}} {{$value2}} {{end}}</td>
+     <td> {{if eq $key2 "LOST"}} {{$value2}} {{end}}</td>
+     <td> {{if eq $key2 "DROP"}} {{$value2}} {{end}}</td>
+	  {{end}}
+	{{end}}
+
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+<p>
+  <a id="nextPage" href="{{.nextPage}}">More results</a>
+</p>
+
+{{else}}
+<p>
+  No more results
+</p>
+{{end}}
+
+
+{{template "footer.html" .}}

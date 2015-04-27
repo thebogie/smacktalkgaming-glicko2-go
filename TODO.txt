@@ -1,0 +1,12 @@
+
+
+boardgame geek images of games
+Size tables to mobile phone
+add graph for wins
+
+SERVER
+- run revel in prod at startup
+
+
+NEO4J
+- authentication on. tried different scenarios and not of them worked

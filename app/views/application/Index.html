@@ -1,0 +1,17 @@
+{{set . "title" "Home"}}
+{{set . "id" "132124123"}}
+{{template "header.html" .}}
+
+<h1>Facebook!</h1>
+
+
+{{if .me}}
+<h3>You're {{.me.first_name}} {{.me.last_name}} on Facebook</h3>
+<img src="" />
+<a href="players/list">List all Players</a> 
+<a href="profile/{{.me.playerUUID}}">Profile</a> 
+{{else}}
+<a href="{{.authUrl}}">login</a> <br> 
+{{end}}
+
+{{template "footer.html" .}}

@@ -1,0 +1,43 @@
+
+<!DOCTYPE html><html><head><style>thead {color:green;}
+tbody {color:blue;}
+tfoot {color:red;}
+table,th,td
+{border:1px solid black;}
+</style>
+
+<script src="/public/js/profile.js"></script></head>
+</head>
+<body>
+<table border="1" style="width:300px">
+<thead>
+<tr>
+<script>
+
+  	//window.alert(supportsLocalStorage());
+</script>
+<th>Stat</th>
+<th>Value</th>
+
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{{.retval.NUMBEROFGAMES.tag}}</td>
+<td>{{.retval.NUMBEROFGAMES.value}}</td>
+
+</tr>
+
+<tr>
+<td>{{.retval.NUMBEROFGAMESWON.tag}}</td>
+<td>{{.retval.NUMBEROFGAMESWON.value}}</td>
+</tr>
+
+<tr>
+<td>{{.retval.TOTALGAMESLOST.tag}}</td>
+<td>{{.retval.TOTALGAMESLOST.value}}</td>
+</tr>
+<tbody>
+</table>
+</body>
+</html>
