@@ -20,7 +20,7 @@ func query(load *neoism.CypherQuery) {
 	neo := new(Neo4jObj)
 	neo.init()
 
-	neo.dbc.Session.Log = true
+	neo.dbc.Session.Log = false
 	neo.dbc.Cypher(load)
 
 	log.Println("AFTER CYPHER", load.Result)
@@ -170,6 +170,47 @@ func (qobj *QueryObj) GetAllPlayers() []Player {
 
 }
 
+func (qobj *QueryObj) GetAllEvents() []Event {
+
+	//var retval []Event
+
+	res := []Event{}
+
+	/*
+		res := []struct {
+			// `json:` tags matches column names in query
+			Location   string `json:"n.Location"`
+			Numplayers string `json:"n.Numplayers"`
+			Start      string `json:"n.Start"`
+			Stop       string `json:"n.Stop"`
+			UUID       string `json:"n.UUID"`
+		}{}
+	*/
+
+	prop := neoism.Props{}
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			start n=node(*)
+			MATCH (n:Event)
+			
+			return n.Eventname, n.Location, n.Numplayers, n.Start, n.Stop, n.UUID
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	for _, node := range res {
+		log.Println("res", node)
+		//retval = append(retval, Event{Location: node.Location, Surname: node.Surname, UUID: node.UUID})
+	}
+
+	return res
+
+}
+
 // Game Name ,WON, LOST
 //TODO add demolish drop
 func (qobj *QueryObj) OverallGameRecord(UUID string) map[string]map[string]int {
@@ -198,7 +239,7 @@ func (qobj *QueryObj) OverallGameRecord(UUID string) map[string]map[string]int {
 
 	retval := make(map[string]map[string]int)
 	for _, v := range res {
-		//log.Println("R:", v.Result, v.Game)
+		log.Println("R:", v.Result, v.Game)
 
 		if _, ok := retval[v.Game]; !ok {
 			retval[v.Game] = make(map[string]int)
@@ -206,13 +247,15 @@ func (qobj *QueryObj) OverallGameRecord(UUID string) map[string]map[string]int {
 
 		if _, ok := retval[v.Game][v.Result]; !ok {
 
-			retval[v.Game] = map[string]int{v.Result: 1}
+			retval[v.Game][v.Result] = 1
+			//map[string]int{v.Result: 1}
 
 		} else {
 
 			retval[v.Game][v.Result]++
 
 		}
+		log.Println("RETVAL", retval)
 
 	}
 

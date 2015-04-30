@@ -48,13 +48,16 @@
     <tr>
 	<td>{{$key}}</td>
 	{{with $value}} 
-	   {{range $key2, $value2 := $value}}
+	 
 	
-     <td> {{if eq $key2 "DEMOLISH"}} {{$value2}} {{end}}</td>
-	 <td> {{if eq $key2 "WON"}} {{$value2}} {{end}}</td>
-     <td> {{if eq $key2 "LOST"}} {{$value2}} {{end}}</td>
-     <td> {{if eq $key2 "DROP"}} {{$value2}} {{end}}</td>
-	  {{end}}
+	<td> {{if $value.DEMOLISH}} {{$value.DEMOLISH}} {{else}} 0 {{end}} </TD>
+		<td> {{if $value.WON}} {{$value.WON}} {{else}} 0 {{end}} </TD>
+
+	<td> {{if $value.LOST}} {{$value.LOST}} {{else}} 0 {{end}} </TD>
+
+	<td> {{if $value.DROP}} {{$value.DROP}} {{else}} 0 {{end}} </TD>
+
+
 	{{end}}
 
     </tr>

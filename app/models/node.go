@@ -2,9 +2,12 @@
 package models
 
 import (
-	//"fmt"
+	"bytes"
+	"encoding/json"
 	"github.com/jmcvetta/neoism"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"reflect"
 )
 
@@ -13,12 +16,22 @@ type Node interface {
 	Read() string
 }
 
+/*
 type Event struct {
 	Start      string
 	Stop       string
 	Numplayers string
 	Location   string
 	UUID       string
+}
+*/
+type Event struct {
+	Eventname  string `json:"n.Eventname"`
+	Location   string `json:"n.Location"`
+	Numplayers string `json:"n.Numplayers"`
+	Start      string `json:"n.Start"`
+	Stop       string `json:"n.Stop"`
+	UUID       string `json:"n.UUID"`
 }
 
 type Game struct {
@@ -44,13 +57,81 @@ func getUUID() string {
 
 }
 
+func getEventName() string {
+
+	var retval bytes.Buffer
+
+	type wordObj struct {
+		Id   int    `json:"id"`
+		Word string `json:"word"`
+	}
+
+	type eventnameObj struct {
+		noun wordObj
+		adj  wordObj
+	}
+
+	var eventname eventnameObj
+
+	//adjective!
+	adjURL := "http://api.wordnik.com:80/v4/words.json/randomWord?hasDictionaryDef=true&includePartOfSpeech=adjective&minCorpusCount=0&maxCorpusCount=-1&minDictionaryCount=1&maxDictionaryCount=-1&minLength=0&maxLength=-1&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5"
+	nounURL := "http://api.wordnik.com:80/v4/words.json/randomWord?hasDictionaryDef=true&includePartOfSpeech=noun&minCorpusCount=0&maxCorpusCount=-1&minDictionaryCount=1&maxDictionaryCount=-1&minLength=0&maxLength=-1&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5"
+
+	res, err := http.Get(adjURL)
+	eventname.adj.Word = "boring"
+	if err == nil {
+
+		//found an adjective
+		jsonDataFromHttp, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+		log.Println("EVENT", string(jsonDataFromHttp))
+
+		err = json.Unmarshal([]byte(jsonDataFromHttp), &eventname.adj) // here!
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	res, err = http.Get(nounURL)
+	eventname.noun.Word = "PUTUUID"
+	if err == nil {
+
+		//found an adjective
+		jsonDataFromHttp, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			panic(err)
+		}
+
+		err = json.Unmarshal([]byte(jsonDataFromHttp), &eventname.noun) // here!
+		if err != nil {
+			panic(err)
+		}
+	}
+	retval.WriteString("the ")
+	retval.WriteString(eventname.adj.Word + " ")
+	retval.WriteString(eventname.noun.Word + " ")
+	retval.WriteString("event")
+
+	log.Println("ADJ RETURN", retval.String())
+	log.Println("ADJ RETURN", eventname)
+
+	return retval.String()
+}
+
 /******** EVENT NODE *************/
 
 func (n *Event) Create() neoism.Props {
 
 	log.Println("Creating  ", reflect.TypeOf(n))
+
 	n.UUID = getUUID()
+	n.Eventname = getEventName()
+
 	return neoism.Props{
+		"Eventname":  n.Eventname,
 		"Start":      n.Start,
 		"Stop":       n.Stop,
 		"Numplayers": n.Numplayers,
@@ -63,9 +144,8 @@ func (n *Event) Create() neoism.Props {
 func (n *Event) Read() string {
 
 	log.Println("Reading  ", reflect.TypeOf(n))
-	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
-	return "asdf"
-	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
+	log.Println("Searching for  ", n.Eventname)
+	return "MATCH (node:Event { Eventname:\"" + n.Eventname + "\" }) RETURN node"
 
 }
 

@@ -1,15 +1,25 @@
 {{set . "title" "Home"}}
-{{set . "id" "132124123"}}
 {{template "header.html" .}}
 
-<h1>Facebook!</h1>
+<h1>Smacktalkgaming!</h1>
 
 
 {{if .me}}
-<h3>You're {{.me.first_name}} {{.me.last_name}} on Facebook</h3>
+<h3>Welcome, {{.me.first_name}} {{.me.last_name}}</h3>
 <img src="" />
-<a href="players/list">List all Players</a> 
-<a href="profile/{{.me.playerUUID}}">Profile</a> 
+
+<table border="1">
+  <tbody>
+    <tr>
+	<td><a href="players/list">List all Players</a> </td></tr>
+	<td><a href="events/list">List all Events</a> </td></tr>
+     <Tr> <td><a href="profile/{{.me.playerUUID}}">Profile</a> </td> </tr>
+
+    </tr>
+
+</tbody>
+</table>
+
 {{else}}
 <a href="{{.authUrl}}">login</a> <br> 
 {{end}}

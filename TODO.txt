@@ -1,4 +1,9 @@
 
+player images in database
+
+Profile:
+event list for player with game played and other players involved
+nemisis and scores with other players(?)
 
 boardgame geek images of games
 Size tables to mobile phone

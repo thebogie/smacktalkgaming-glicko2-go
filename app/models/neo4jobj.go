@@ -96,7 +96,7 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 		Parameters: bundleProps,
 		Result:     &res1,
 	}
-	neo.dbc.Session.Log = true
+	neo.dbc.Session.Log = false
 	neo.dbc.Cypher(&cq)
 
 	return UUID
