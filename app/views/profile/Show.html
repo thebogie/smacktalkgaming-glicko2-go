@@ -1,4 +1,4 @@
-{{template "header.html" .}}
+[[template "header.html" .]]
 
  <table border="1" style="width:300px">
 <thead>
@@ -14,25 +14,25 @@
 </thead>
 <tbody>
 <tr>
-<td>{{.retval.NUMBEROFGAMES.tag}}</td>
-<td>{{.retval.NUMBEROFGAMES.value}}</td>
+<td>[[.retval.NUMBEROFGAMES.tag]]</td>
+<td>[[.retval.NUMBEROFGAMES.value]]</td>
 
 </tr>
 
 <tr>
-<td>{{.retval.NUMBEROFGAMESWON.tag}}</td>
-<td>{{.retval.NUMBEROFGAMESWON.value}}</td>
+<td>[[.retval.NUMBEROFGAMESWON.tag]]</td>
+<td>[[.retval.NUMBEROFGAMESWON.value]]</td>
 </tr>
 
 <tr>
-<td>{{.retval.TOTALGAMESLOST.tag}}</td>
-<td>{{.retval.TOTALGAMESLOST.value}}</td>
+<td>[[.retval.TOTALGAMESLOST.tag]]</td>
+<td>[[.retval.TOTALGAMESLOST.value]]</td>
 </tr>
 <tbody>
 
 </table>
 <hr>
-{{if .retval2}}
+[[if .retval2]]
 <table border="1">
   <thead>
     <tr>
@@ -44,35 +44,35 @@
     </tr>
   </thead>
   <tbody >
-    {{range $key, $value := .retval2}}
+    [[range $key, $value := .retval2]]
     <tr>
-	<td>{{$key}}</td>
-	{{with $value}} 
+	<td>[[$key]]</td>
+	[[with $value]] 
 	 
 	
-	<td> {{if $value.DEMOLISH}} {{$value.DEMOLISH}} {{else}} 0 {{end}} </TD>
-		<td> {{if $value.WON}} {{$value.WON}} {{else}} 0 {{end}} </TD>
+	<td> [[if $value.DEMOLISH]] [[$value.DEMOLISH]] [[else]] 0 [[end]] </TD>
+		<td> [[if $value.WON]] [[$value.WON]] [[else]] 0 [[end]] </TD>
 
-	<td> {{if $value.LOST}} {{$value.LOST}} {{else}} 0 {{end}} </TD>
+	<td> [[if $value.LOST]] [[$value.LOST]] [[else]] 0 [[end]] </TD>
 
-	<td> {{if $value.DROP}} {{$value.DROP}} {{else}} 0 {{end}} </TD>
+	<td> [[if $value.DROP]] [[$value.DROP]] [[else]] 0 [[end]] </TD>
 
 
-	{{end}}
+	[[end]]
 
     </tr>
-    {{end}}
+    [[end]]
   </tbody>
 </table>
 <p>
-  <a id="nextPage" href="{{.nextPage}}">More results</a>
+  <a id="nextPage" href="[[.nextPage]]">More results</a>
 </p>
 
-{{else}}
+[[else]]
 <p>
   No more results
 </p>
-{{end}}
+[[end]]
 
 
-{{template "footer.html" .}}
+[[template "footer.html" .]]

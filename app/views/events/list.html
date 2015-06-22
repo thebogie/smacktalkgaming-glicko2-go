@@ -1,34 +1,33 @@
-{{template "header.html" .}}
-{{if .events}}
+[[template "header.html" .]]
+[[if .events]]
 <table>
   <thead>
     <tr>
       <th>Event Name</th>
-      <th>Location</th>
+      <th>Location</th><
       <th width="8%">Number of players</th>
       <th  width="12%">Start Date/Time</th>
       <th width="12%">Stop Date/Time</th>
     </tr>
   </thead>
   <tbody>
-    {{range .events}}
+    [[range .events]]
     <tr>
-      <td>{{.Eventname}}</td>
-      <td>{{.Location}}</td>
-      <td>{{.Numplayers}}</td>
-      <td>{{.Start}}</td>
-	      <td>{{.Stop}}</td>
+      <td>[[.Eventname]]</td>
+      <td>[[.Numplayers]]</td>
+      <td>[[.Start]]</td>
+	      <td>[[.Stop]]</td>
     </tr>
-    {{end}}
+    [[end]]
   </tbody>
 </table>
 <p>
-  <a id="nextPage" href="{{.nextPage}}">More results</a>
+  <a id="nextPage" href="[[.nextPage]]">More results</a>
 </p>
 
-{{else}}
+[[else]]
 <p>
   No more results
 </p>
-{{end}}
-{{template "footer.html" .}}
+[[end]]
+[[template "footer.html" .]]

@@ -1,10 +1,19 @@
-{{set . "title" "Home"}}
-{{template "header.html" .}}
+[[if eq .RunMode "dev"]]
+[[template "errors/404-dev.html" .]]
+
+[[set . "title" "Home"]]
+[[template "header.html" .]]
+
+[[else]]
+	
+
+
 
 <div id="seed">
 
-<h1>Hello {{.contents}}</h1>
 
 </div>
 
-{{template "footer.html" .}}
+[[end]]
+
+[[template "footer.html" .]]

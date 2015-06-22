@@ -61,6 +61,13 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 	var statementStr string
 
 	switch t := relate.(type) {
+
+	case *Played_At:
+		statementStr = `
+			match a, b where a.UUID ={UUIDnodeA} 
+			AND b.UUID = {UUIDnodeB} 
+			CREATE (a)-[r:PLAYED_AT {relateProps}]->(b) RETURN r
+		`
 	case *Played_In:
 		statementStr = `
 			match a, b where a.UUID ={UUIDnodeA} 
@@ -136,6 +143,8 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 			label = "Player"
 		case *Event:
 			label = "Event"
+		case *Location:
+			label = "Location"
 		default:
 			log.Println("NODE TYPE", t)
 		}

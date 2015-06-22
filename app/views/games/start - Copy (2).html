@@ -1,0 +1,85 @@
+{{template "header.html" .}}
+
+
+<script>
+
+$( document ).ready(function() {
+  console.log( 'ready!' );
+});
+
+var str=''; // variable to store the options
+var selectplayer = new Array();
+    {{range .players}}
+	
+	str += '<option data-value="'+{{.UUID}}+'" >{{.Firstname}} {{.Surname}}</option>'; // Storing options in variable
+//month.push("{{.Firstname}} {{.Surname}}");
+{{end}}
+//for (var i=0; i < month.length;++i){
+//str += '<option data-value="'+month[i]+'" />'; // Storing options in variable
+//}
+var my_list=document.getElementById("playerlist");
+my_list.innerHTML = str;
+
+
+
+
+function submitForm() {
+
+
+	alert(this);
+	
+    $.ajax({type:'POST', 
+			url: '/players/createlist', 
+			data:$('#player').serialize(), 
+			success: function(response) {
+        $('#selectPlayers').find('.form_result').html(response);
+    }});
+
+    return false;
+}
+
+
+
+</script>
+
+
+
+<BR>
+
+
+
+
+
+
+
+
+<div>
+	<form id="selectPlayers" onsubmit="return submitForm();">
+	<input name="selectplayer" list="playerlist" id="player">
+	<datalist id="playerlist" ></datalist>
+    <input type="submit" name="submit"  value="Add" />
+	</form>
+	
+<div class="form_result"> answer </div>
+
+</div>
+
+<script>
+
+
+var str=''; // variable to store the options
+var selectplayer = new Array();
+    {{range .players}}
+	
+	str += '<option data-value="'+{{.UUID}}+'" >{{.Firstname}} {{.Surname}}</option>'; // Storing options in variable
+//month.push("{{.Firstname}} {{.Surname}}");
+{{end}}
+//for (var i=0; i < month.length;++i){
+//str += '<option data-value="'+month[i]+'" />'; // Storing options in variable
+//}
+var my_list=document.getElementById("playerlist");
+my_list.innerHTML = str;
+</script>
+
+
+{{template "footer.html" .}}

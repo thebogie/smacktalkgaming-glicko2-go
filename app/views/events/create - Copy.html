@@ -1,0 +1,620 @@
+[[template "header.html" .]]
+
+<style>
+.item, .placeholder {
+    padding: 2px;
+    width: 50px;
+    height: 20px;
+    border: 1px solid #333;
+    background: #EEE;
+}
+.placeholder {
+    background: #AEF;
+}
+
+</style>
+
+ <div data-ng-app="smacktalk-get" >
+  <div data-ng-controller="EventCtrl" ng-cloak >
+
+	<div  data-ng-show="showPage1" class='container-fluid' data-ng-controller="PlayerListCtrl">
+	   	<h4>Players</h4>
+	    <input type="text" ng-model="currentplayerlist" placeholder="Players involved" 
+			typeahead="player as player.selectName for player in updateList($viewValue)" 
+			typeahead-loading="loadingPlayers" 
+		 	typeahead-on-select='onSelect($item, $model, $label); currentplayerlist =""; '
+		>
+	    <i ng-show="loadingPlayers" class="glyphicon glyphicon-refresh"></i>
+		
+		<ul id="currentplayerlist"> 
+			<li> Number of Players: {{numplayers}}</li>
+			<li data-ng-repeat="currentplayer in activelist">
+				<a data-ng-click="removeItem(currentplayer.UUID)">{{currentplayer.Firstname}} {{currentplayer.Surname}}</a>
+			</li>
+		</ul>
+		<hr>
+	</div>
+
+
+
+ 
+
+	<div data-ng-show="showPage1" class='container-fluid' data-ng-controller="GameListCtrl">
+	   	<h4>Games</h4>
+	    <input type="text" ng-model="currentgamelist" placeholder="Game to be played" 
+			typeahead="game as game.selectName for game in updateList($viewValue)" 
+			typeahead-loading="loadingGames" 
+		 	typeahead-on-select='onSelect($item, $model, $label); currentgamelist =""; '
+		>
+	    <i ng-show="loadingGames" class="glyphicon glyphicon-refresh"></i>
+	
+		<ul id="currentgamelist"> 
+			<li data-ng-repeat="currentgame in activelist">
+				<a data-ng-click="removeItem(currentgame.UUID)">{{currentgame.Name }} {{currentgame.Published }}</a>
+			</li>
+		</ul>
+	<hr>
+	</div>
+
+
+
+	<div data-ng-show="showPage1" class='container-fluid' data-ng-controller="LocationListCtrl">
+	   	<h4>Location</h4>
+	    <input type="text" ng-model="currentlocationlist" placeholder="Locations" 
+			typeahead="loc for loc in updateList($viewValue)" 
+			typeahead-loading="loadingLocations" 
+		 	typeahead-on-select='onSelect($item, $model, $label); currentlocationlist =""; '
+		>
+	    <i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+	
+		<ul id="currentlocationlist"> 
+			<li data-ng-repeat="currentlocation in activelist">
+				<a data-ng-click="removeItem(currentlocation)">{{currentlocation}}</a>
+			</li>
+		</ul>
+	<hr>
+	</div>
+
+    <div>
+       <input data-ng-show="showPage1" type="button" value="Start Event!" data-ng-click="startEvent()" >
+	</div>
+	
+	
+	<!-- event timer page -->
+	<div data-ng-show="showPage2" data-ng-controller="EventTimerCtrl" >
+		<h4>{{eventname}}</h4>
+	 	
+		<table>
+			<!-- 
+			 <tr data-ng-repeat="x in playerlist">
+	    		<td>{{ x.Firstname }} {{ x.Surname }}</td>
+	  		</tr> 		
+			-->
+	  		<tr data-ng-repeat="x in gamelist">
+	    		<td>{{ x.Name }} {{ x.Published }}</td>
+	  		</tr>
+		</table> 
+		
+		
+
+		
+		
+		<hr>
+
+		start: {{starttime.toString()}}
+		<br/>
+		{{currenttime}}
+	
+		<hr>
+
+    
+   		<div class="container-fluid">
+	  		<div class="row">    
+	    		<table 	class="table table-bordered table-condensed"   
+		       			as-sortable="sortableOptions"  ng-model="playerlist">
+		     
+			<thead>
+				<tr >
+	   				<th>Player</th>
+	   				<th>Place</th>
+					<th>Results</th>
+	 			</tr>
+			</thead>
+			<tbody>
+	        	<tr    ng-repeat="player in playerlist" as-sortable-item class="as-sortable-item">
+	            	<td as-sortable-item-handle class="as-sortable-item-handle" >
+	                       <span data-ng-bind="player.selectName"></span>
+	           		</td>
+					<td >
+						
+		 				<select ng-init="chosenresult = SetInitResult($index)" ng-change="updatePlayerResult(chosenresult)" ng-options="result for result in possibleresults" ng-model="chosenresult"></select>
+					</td>
+					<td >
+						<select ng-init="chosenplace = SetInitPlace($index)"  ng-options="place.playedin.Place for place in playerlist" ng-model="chosenplace"></select>
+					</td>
+	        	</tr>
+			</tbody>
+	    		</table>
+	        </div>
+		</div>
+	<hr>
+
+
+
+<div>
+       		<input  type="button" value="Cancel Event" data-ng-click="cancelEvent()" >
+		</div><div>
+       		<input  type="button" value="Commit Event" data-ng-click="commitEvent()" >
+		</div>
+
+	</div>
+	
+</div> <!-- end of all object -->
+
+<Script>
+             
+
+ var app = angular.module( 'smacktalk-get' ,  ['ui.bootstrap', 'ui.sortable'] );
+
+app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
+   return {
+    	getPlayersAutoComplete: function(item) {
+       //since $http.get returns a promise,
+       //and promise.then() also returns a promise
+       //that resolves to whatever value is returned in it's 
+       //callback argument, we can return that.
+
+       		return $http.get([[url "Players.ListAutoComplete"]].replace("<nil>", item)).then(function(result) {
+           return result.data;
+       	});
+     } , 
+	 	getGamesAutoComplete: function(item) {
+       return $http.get([[url "Games.ListAutoComplete"]].replace("<nil>", item)).then(function(gameresult) {
+           return gameresult.data;
+       });
+     } ,
+	  	getEvent: function(item) {
+       return $http.get([[url "Events.Status"]].replace("<nil>", item)).then(function(result) {
+           return result.data;
+       });
+     } ,
+	
+		httpstartEvent: function(eventcargo) {
+				
+			return $http({method: 'POST', 
+					url: '/events/start',  
+					data:$filter('json')(eventcargo) 
+					}).then(function(data, status, headers, config) {
+					 return data;
+			});
+	   }
+	}
+}]);
+
+
+app.factory('Lists', function () {
+    var userName = "John Doe";
+
+    // Shared Models
+	var locationList = [];
+	var playerList = [];
+	var gameList = [];
+	
+	
+    return {
+        getUserName: function () {
+             return userName;                   
+        },
+		//TODO for playerlist only right now
+		orderList: function(listType){
+			
+			for (var i = 0; i < playerList.length; i++) {
+			
+				if (i == 0) {
+					playerList[i].playedin["Result"] = "WIN";
+				}
+				playerList[i].playedin["Place"] = (i+1).toString();
+				   
+			}
+			
+		},
+		getList: function (listType) {
+			switch (listType) {
+			  case "gameList":
+
+			    return gameList;
+			    break;
+			  case "playerList":
+
+			    return playerList;
+			    break;
+			  case "locationList":
+
+			    return locationList;
+			    break;
+			  default:
+			   
+			}                  
+        },
+		addList: function(listObj, listType) {
+			switch (listType) {
+			  case "gameList":
+				//console.log("listobj" + JSON.stringify(listObj));
+				var objalreadypresent  = false;
+				for (var i = 0; i < gameList.length; i++) {
+				    if (gameList[i].UUID == listObj.UUID ) {
+						objalreadypresent = true;
+					}
+				    //Do something
+				}
+			   	if (objalreadypresent == false) {
+			   		gameList.push(listObj);
+				}
+			   
+				
+			    break;
+			  case "playerList":
+				var objalreadypresent  = false;
+				for (var i = 0; i < playerList.length; i++) {
+				    if (playerList[i].UUID == listObj.UUID ) {
+						objalreadypresent = true;
+					
+					}
+				   
+				}
+			   	if (objalreadypresent == false) {
+					
+					listObj["playedin"] = {
+						Result:"WIN", 
+						Place:"0"};
+			   		playerList.push(listObj);
+				}
+			   
+				this.orderList("playerList");
+			    break;
+				
+			  case "locationList":
+		
+				//only one allowed
+				if (locationList[0] != listObj ) {
+						
+			
+				    
+			   		locationList.push(listObj);
+				}
+			   
+				
+			    break;
+			  default:
+			    console.log("Sorry, we are out of " + expr + ".");
+			}   
+			
+		},
+		removeList: function(uuid, listType) {
+			switch (listType) {
+ 			case "locationList":
+
+				locationList = [];
+
+			   
+			    break;
+				
+ 			case "gameList":
+
+				for (var i = 0; i < gameList.length; i++) {
+				    if (gameList[i].UUID == uuid ) {
+						gameList.splice(i,1);
+						break;
+					}
+				    //Do something
+				}
+
+			   
+			    break;
+			  case "playerList":
+
+				for (var i = 0; i < playerList.length; i++) {
+				    if (playerList[i].UUID == uuid ) {
+						playerList.splice(i,1);
+						break;
+					}
+				    //Do something
+				}
+
+			   
+			    break;
+			  default:
+			    console.log("Sorry, we are out of " + expr + ".");
+			}   
+			
+		}
+
+    }
+	    
+
+});
+
+
+
+
+app.controller( 'GameListCtrl' , ['$scope', '$http', 'Lists', 'myHttpFactory', function( $scope , $http, Lists, myHttpFactory) {
+
+ 	$scope.activelist = [];
+
+	$scope.updateList = function(item) {
+
+		 return myHttpFactory.getGamesAutoComplete(item).then(function(data) {
+			for (x in data) {
+    			//console.log("HERE" +  JSON.stringify(data[x]) + x) ;
+				data[x]["selectName"] = data[x]["Name"] + " (" + data[x]["Published"] + ")";
+			}
+			//console.log("DATA" + JSON.stringify(data));
+		    //return [{"Name":"Carcassonne","Published":"2000","UUID":"e3ed6302-f868-437f-b754-6646061c1363"},{"Name":"Caesar & Cleopatra","Published":"1997","UUID":"77b3f5f2-d710-469b-b4c8-cefa5b2974ff"}];
+			return data;
+		 });	
+  	};
+
+	$scope.onSelect = function ($item, $model, $label) {
+		Lists.addList($model , "gameList");
+		$scope.activelist = Lists.getList("gameList");
+		//console.log("LIST: " + JSON.stringify(Lists.getList("gameList")));
+	};
+
+  	$scope.removeItem = function( uuid ) { 
+		//console.log("removeItem" + uuid);
+		Lists.removeList(uuid , "gameList");
+		$scope.activelist = Lists.getList("gameList");
+
+ 	}
+	
+	$scope.$on('HideDIVEventFromEventCtrl',function(event, data){
+          $scope.hideDIV = data;
+    });
+
+}]);
+
+app.controller( 'PlayerListCtrl' , ['$scope', '$http', 'Lists', 'myHttpFactory', function( $scope , $http, Lists, myHttpFactory) {
+
+  	$scope.activelist = [];
+	$scope.numplayers = 0;
+	
+	//event to hide div
+	$scope.$on('HideDIVEventFromEventCtrl',function(event, data){
+          $scope.hideDIV = data;
+    });
+	
+	$scope.onSelect = function ($item, $model, $label) {
+		Lists.addList($model , "playerList");
+		$scope.activelist = Lists.getList("playerList");
+		//console.log("LIST: " + JSON.stringify(Lists.getList("playerList")));
+		$scope.numplayers = $scope.activelist .length;
+	};
+	
+	$scope.updateList =  function( item ) { 
+	
+	   return myHttpFactory.getPlayersAutoComplete(item).then(function(data) {
+ 			for (x in data) {
+    			//console.log("HERE" +  JSON.stringify(data[x]) + x) ;
+				//TODO add nickname
+				data[x]["selectName"] = data[x]["Firstname"] + " " + data[x]["Surname"];
+			}
+			//console.log("DATA" + JSON.stringify(data));
+		    return data;
+		 });	
+  	};
+	
+  	$scope.removeItem = function( uuid ) { 
+		//console.log("removeItem" + uuid);
+		Lists.removeList(uuid , "playerList");
+		$scope.activelist = Lists.getList("playerList");
+		$scope.numplayers = $scope.activelist.length;
+	
+		
+ 	}
+
+
+}]);
+
+
+
+app.controller( 'LocationListCtrl' , ['$scope', 'Lists', function( $scope , Lists) {
+
+ 	$scope.permlist = [];
+ 	$scope.activelist = {};
+	$scope.index = 0;
+	
+	[[range   .locations]]
+		$scope.permlist[$scope.index] = "[[.]]";
+		$scope.index = $scope.index +1 ;
+	[[end]]
+	
+	$scope.$on('HideDIVEventFromEventCtrl',function(event, data){	
+          $scope.hideDIV = data;
+    });
+	
+	$scope.onSelect = function ($item, $model, $label) {
+		Lists.addList($item , "locationList");
+		$scope.activelist = Lists.getList("locationList");
+		//console.log("LIST: " + JSON.stringify(Lists.getList("locationList")));
+	};
+
+	$scope.updateList =  function( item ) { 
+		return $scope.permlist;
+	};
+
+  	$scope.removeItem = function( location ) { 
+		Lists.removeList(location , "locationList");
+		$scope.activelist = Lists.getList("locationList");
+ 	};
+
+//lists.set =  $scope.activelist;
+
+}]);
+
+
+
+app.controller( 'EventTimerCtrl' , ['$scope', 'Lists', 'myHttpFactory', '$interval', function( $scope , Lists , myHttpFactory, $interval) {
+	
+
+	
+	$scope.eventname = "FISH";
+	$scope.starttime  = "000";
+	
+	
+	//TODO make this a http get to get the servers definitions
+	$scope.possibleresults = [ "DEMOLISH", "WIN" , "TIE", "LOSE", "QUIT", "RAGE QUIT" ];
+
+	$scope.gamelist = Lists.getList("gameList");
+	$scope.playerlist = Lists.getList("playerList");
+	$scope.locationlist = Lists.getList("locationList");
+	
+	
+	$scope.updatePlayerResult = function(item) {
+		console.log("placechange");
+		//Lists.updateList("playerList");
+	};
+	
+	$scope.SetInitResult = function(index) {
+		if (index < 1) {
+			return "WIN";
+		}
+		return "LOSE";
+	};
+	
+	$scope.SetInitPlace = function(index) {
+		//TODO why is this not working?
+		//console.log((index+1).toString());
+		return (index+1).toString();
+	}
+	
+	
+  $scope.sortableOptions = {
+	
+	accept: function (sourceItemHandleScope, destSortableScope) {
+		console.log("Accept");
+		return true},
+    itemMoved: function (event) {
+		console.log("itemMoved");
+		
+			
+	},
+    orderChanged: function(event) {
+	
+
+		
+		Lists.orderList("playerList");
+		
+		console.log("orderchanged" + event.dest.index);
+		console.log("orderchanged" + event.source.index);
+		if ( event.dest.index == 0) {
+			 $scope.chosenresult = Updater.updateResult("FISH");
+		} else {
+			$scope.chosenresult = "LOSE";
+		}
+		//$scope.chosenplace = (event.dest.index+1).toString();
+	
+		
+	},
+	
+    containment: '#sortable-container'
+  };
+
+	$interval(function(){
+	
+        seconds = Math.floor((new Date() - ($scope.starttime))/1000);
+        minutes = Math.floor(seconds/60);
+        hours = Math.floor(minutes/60);
+        days = Math.floor(hours/24);
+        
+        hours = hours-(days*24);
+        minutes = minutes-(days*24*60)-(hours*60);
+        seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
+		
+		$scope.currenttime = "Game running time: Days: " + days + 
+		" Hours: " + hours + " Minutes: " + minutes + " Seconds: " + seconds;
+		
+	},1000);
+	
+	
+
+	$scope.$on('ShowPage2EventFromEventCtrl',function(event,  UUID){
+		
+			myHttpFactory.getEvent(UUID).then(function(data) {
+				
+				//console.log("data:"  +JSON.stringify(data));
+				$scope.eventname = data.Eventname;
+				$scope.starttime = new Date(data.Start);
+			
+					
+
+			});
+          
+
+    });
+	
+}]);
+
+
+app.controller( 'EventCtrl' , ['$http', '$window', '$scope', 'Lists', 'myHttpFactory' , function( $http, $window, $scope , Lists, myHttpFactory) {
+	//TODO VALIDATION CODE HERE
+	$scope.showPage1 = true;
+	$scope.showPage2 = false;
+	$scope.showPage3= false;
+	
+	$scope.eventname = "FISH";
+	$scope.eventUUID = "TOAD";
+	
+	$scope.startEvent = function () {
+		
+		var eventcargo = {players: [], games:[], location:[]};
+		
+		eventcargo.players = Lists.getList("playerList");
+		eventcargo.games = Lists.getList("gameList");
+		eventcargo.location = Lists.getList("locationList");
+		myHttpFactory.httpstartEvent(eventcargo).then(function(results) {
+			
+			$scope.showPage1 = false;
+			$scope.showPage2 = true;
+			//console.log("data:"  +JSON.stringify(results));
+			//console.log("status:"  +status);
+			//console.log("headers:"  +headers);
+			//console.log("config:"  +config);
+			
+			$scope.$broadcast( "ShowPage2EventFromEventCtrl", results.data.UUIDEvt );
+
+		});
+		
+	}
+
+	$scope.commitEvent = function () {
+		
+		//get playerlist
+
+		currentplayerlist = Lists.getList("playerList");
+		for (var i = 0; i < currentplayerlist.length; i++) {
+			console.log("name" + currentplayerlist[i].Firstname);
+			console.log("Result" + currentplayerlist[i].playedin["Result"]);
+			console.log("Place" + currentplayerlist[i].playedin["Place"]);
+				   
+		}
+		console.log("starttime" + $scope.starttime);
+		console.log("stoptime" + new Date() );
+		
+		
+	}
+	
+	$scope.cancelEvent = function () {
+		
+			//TODO remove event from database!
+			//myHttpFactory.httpremoveEvent
+			
+			$scope.showPage1 = true;
+			$scope.showPage2 = false;
+
+		
+	}
+	
+	}]);
+
+</script>
+[[template "footer.html" .]]

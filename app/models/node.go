@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 type Node interface {
@@ -25,27 +26,36 @@ type Event struct {
 	UUID       string
 }
 */
+
+type Location struct {
+	Locationname string `json:"Locationname"`
+	Locationlng  string `json:"Locationlng"`
+	Locationlat  string `json:"Locationlat"`
+	UUID         string `json:"UUID"`
+}
+
 type Event struct {
-	Eventname  string `json:"n.Eventname"`
-	Location   string `json:"n.Location"`
-	Numplayers string `json:"n.Numplayers"`
-	Start      string `json:"n.Start"`
-	Stop       string `json:"n.Stop"`
-	UUID       string `json:"n.UUID"`
+	Eventname  string `json:"Eventname"`
+	Numplayers string `json:"Numplayers"`
+	Start      string `json:"Start"`
+	Stop       string `json:"Stop"`
+	UUID       string `json:"UUID"`
 }
 
 type Game struct {
-	Name      string
-	Published string
-	UUID      string
+	Name      string `json:"Name"`
+	Published string `json:"Published"`
+	UUID      string `json:"UUID"`
+	BGGLink   string `json:"BGGLink`
 }
 
 type Player struct {
-	Firstname string
-	Surname   string
-	Nickname  string
-	Birthdate string
-	UUID      string
+	Firstname    string `json:"Firstname"`
+	Surname      string `json:"Surname"`
+	Nickname     string `json:"Nickname"`
+	Birthdate    string `json:"Birthdate"`
+	UUID         string `json:"UUID"`
+	CurrentEvent string `json:"Currentevent`
 }
 
 func getUUID() string {
@@ -86,7 +96,7 @@ func getEventName() string {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("EVENT", string(jsonDataFromHttp))
+		log.Println("EVENT adj", string(jsonDataFromHttp))
 
 		err = json.Unmarshal([]byte(jsonDataFromHttp), &eventname.adj) // here!
 
@@ -101,9 +111,12 @@ func getEventName() string {
 
 		//found an adjective
 		jsonDataFromHttp, err := ioutil.ReadAll(res.Body)
+
 		if err != nil {
 			panic(err)
 		}
+
+		log.Println("EVENT: noun", string(jsonDataFromHttp))
 
 		err = json.Unmarshal([]byte(jsonDataFromHttp), &eventname.noun) // here!
 		if err != nil {
@@ -121,6 +134,24 @@ func getEventName() string {
 	return retval.String()
 }
 
+/******** LOCATION NODE *************/
+func (n *Location) Create() neoism.Props {
+	log.Println("Creating  ", reflect.TypeOf(n))
+	n.UUID = getUUID()
+	return neoism.Props{
+		"Locationlat":  n.Locationlat,
+		"Locationlng":  n.Locationlng,
+		"Locationname": n.Locationname,
+		"UUID":         n.UUID}
+}
+
+func (n *Location) Read() string {
+
+	log.Println("Reading  ", reflect.TypeOf(n))
+	log.Println("Searching for  ", n.Locationlat, n.Locationlng)
+	return "MATCH (node:Location { Locationlat:\"" + n.Locationlat + "\", Locationlng:\"" + n.Locationlng + "\" }) RETURN node"
+}
+
 /******** EVENT NODE *************/
 
 func (n *Event) Create() neoism.Props {
@@ -129,13 +160,16 @@ func (n *Event) Create() neoism.Props {
 
 	n.UUID = getUUID()
 	n.Eventname = getEventName()
+	if n.Start == "" {
+		t := time.Now()
+		n.Start = t.Format(time.RFC3339)
+	}
 
 	return neoism.Props{
 		"Eventname":  n.Eventname,
 		"Start":      n.Start,
 		"Stop":       n.Stop,
 		"Numplayers": n.Numplayers,
-		"Location":   n.Location,
 		"UUID":       n.UUID,
 	}
 

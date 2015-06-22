@@ -23,12 +23,15 @@ type Played_With struct {
 	UUID string
 }
 
+type Played_At struct {
+	UUID string
+}
+
 type Included struct {
 	UUID string
 }
 
-/******** PLAYED RELATE *************/
-
+/******** PLAYED IN *************/
 func (r *Played_In) Create() neoism.Props {
 
 	log.Println("Creating  ", reflect.TypeOf(r))
@@ -50,6 +53,7 @@ func (r *Played_In) Read() string {
 
 }
 
+/******** PLAYED WITH *************/
 func (r *Played_With) Create() neoism.Props {
 
 	log.Println("Creating  ", reflect.TypeOf(r))
@@ -69,6 +73,27 @@ func (r *Played_With) Read() string {
 
 }
 
+/******** PLAYED AT *************/
+func (r *Played_At) Create() neoism.Props {
+
+	log.Println("Creating  ", reflect.TypeOf(r))
+	r.UUID = getUUID()
+	return neoism.Props{
+		"UUID": r.UUID,
+	}
+
+}
+
+func (r *Played_At) Read() string {
+
+	log.Println("Reading  ", reflect.TypeOf(r))
+	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	return "asdf"
+	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
+
+}
+
+/******** INCULDED *************/
 func (r *Included) Create() neoism.Props {
 
 	log.Println("Creating  ", reflect.TypeOf(r))

@@ -1,0 +1,81 @@
+[[template "header.html" .]]
+
+<script src="/public/js/vendor/lodash.js"></script>
+<script src="app.js"></script> 
+
+<style>
+table {
+  margin: .5em 0 1em;
+}
+
+table th {
+  text-align: left;
+  border: 1px solid #d1d1d1;
+  padding: .4em .8em;
+  font-weight: bold;
+}
+
+table td {
+  background-color: #fff;
+  border: 1px solid #d1d1d1;
+  padding: 10px;
+}
+
+</style>
+
+<div ng-app="myApp" ng-controller="formCtrl">
+  <form novalidate>
+    First Name:<br>
+    <input type="text" ng-model="user.firstName"><br>
+    Last Name:<br>
+    <input type="text" ng-model="user.lastName">
+    <br><br>
+    <button ng-click="reset()">RESET</button>
+  </form>
+  <p>form = {{user}}</p>
+  <p>master = {{master}}</p>
+</div>
+
+    <div data-ng-app="plunker" data-ng-controller="MainCtrl">
+    <form>
+      <div>
+        <label>title</label>
+        <input type="text" data-ng-model="item.title" list="comicstitle">
+      </div>
+      <div>
+        <input type="Button" value="Add" data-ng-click="addItem(item)">
+      </div>
+    </form>
+
+  <datalist id="comicstitle">
+    <option  data-ng-repeat="ttl in titles" value="{{ttl}}"> 
+  </datalist>
+  
+   </div>
+
+
+<script>
+
+
+
+
+var app2 = angular.module('myApp', []);
+app2.controller('formCtrl', function($scope) {
+	
+    $scope.master = {};
+	
+	[[range .players]]
+	
+		$scope.master["[[.Firstname]] [[.Surname]]"] = "[[.UUID]]" ;
+		//alert("[[.Firstname]]");
+	[[end]]
+	
+
+    $scope.reset = function() {
+        $scope.user = angular.copy($scope.master);
+    };
+    $scope.reset();
+});
+</script>
+
+[[template "footer.html" .]]

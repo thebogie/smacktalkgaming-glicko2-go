@@ -1,5 +1,5 @@
-{{template "header.html" .}}
-{{if .players}}
+[[template "header.html" .]]
+[[if .players]]
 <table>
   <thead>
     <tr>
@@ -11,24 +11,24 @@
     </tr>
   </thead>
   <tbody>
-    {{range .players}}
+    [[range .players]]
     <tr>
-      <td>{{.Firstname}}</td>
-      <td>{{.Surname}}</td>
+      <td>[[.Firstname]]</td>
+      <td>[[.Surname]]</td>
       <td>
-        <a href="{{url "Profile.Show" .UUID}}">View Profile</a>
+        <a href="[[url "Profile.Show" .UUID]]">View Profile</a>
       </td>
     </tr>
-    {{end}}
+    [[end]]
   </tbody>
 </table>
 <p>
-  <a id="nextPage" href="{{.nextPage}}">More results</a>
+  <a id="nextPage" href="[[.nextPage]]">More results</a>
 </p>
 
-{{else}}
+[[else]]
 <p>
   No more results
 </p>
-{{end}}
-{{template "footer.html" .}}
+[[end]]
+[[template "footer.html" .]]

@@ -5,12 +5,20 @@
 module:testrunner
 module:jobs
 
-GET     /                                       Application.Index
-GET     /auth                                   Application.Auth
-GET     /logout                                 Application.Logout
-GET     /profile/:uuid	             			Profile.Show
-GET     /players/list                           Players.List
-GET     /events/list                           Events.List
+GET     	/                                       Application.Index
+GET     	/auth                                   Application.Auth
+GET     	/logout                                 Application.Logout
+GET     	/profile/:uuid	             			Profile.Show
+GET     	/players/list                           Players.List
+POST		/players/createlist                    	Players.CreateList
+GET     	/players/auto/:auto               		Players.ListAutoComplete
+GET     	/games/auto/:auto               		Games.ListAutoComplete
+GET     	/events/list                           	Events.List
+GET     	/events/create                          Events.Create
+POST     	/events/start                          	Events.Start
+POST     	/events/commit                          Events.Commit
+GET     	/events/status/:event                   Events.Status
+GET			/seed/:kind								Seed.Index
 #GET     /hotels/:id/booking                     Hotels.Book
 #POST    /hotels/:id/booking                     Hotels.ConfirmBooking
 #POST    /profile/:uuid/show                   Profile.Index
@@ -20,7 +28,6 @@ GET     /events/list                           Events.List
 #POST    /settings                               Hotels.SaveSettings
 #POST    /login                                  Application.Login
 
-GET		/seed									Seed.Index
 
 
 # Map static resources from the /app/public folder to the /public path

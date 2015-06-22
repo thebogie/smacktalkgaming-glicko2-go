@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/revel/revel"
+	//"github.com/revel/revel/cache"
 	"golang.org/x/oauth2"
 	"mitchgottlieb.com/smacktalkgaming/app/models"
 	//"mitchgottlieb.com/smacktalkgaming/app/routes"
 	"net/http"
 	"net/url"
 	"strconv"
+	//"time"
 )
 
 type Application struct {
@@ -60,6 +62,7 @@ func (c Application) Index() revel.Result {
 		neo := new(models.Neo4jObj)
 		u.PlayerUUID = neo.Create(&models.Player{Firstname: me["first_name"].(string), Surname: me["last_name"].(string)})
 		me["playerUUID"] = u.PlayerUUID
+		c.Session["playerUUID"] = u.PlayerUUID
 
 		revel.INFO.Println("HERE", u.AccessToken)
 		revel.INFO.Println("HERE", u.PlayerUUID)

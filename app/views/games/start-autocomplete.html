@@ -1,0 +1,86 @@
+{{template "header.html" .}}
+
+<style>
+@import url('http://twitter.github.com/bootstrap/assets/css/bootstrap.css');
+ .container {
+    margin-top: 40px;
+}
+</style>
+
+<script src="/public/js/vendor/jquery-2.1.0.js"/>
+<script src="/public/js/vendor/knockout-min.js"/>
+
+<script>
+
+
+function AutoCompleteVM() {
+    var self = this;
+    self.completeList = ko.observableArray([]);
+    self.text = ko.observable();
+
+    self.updated = ko.computed(function (val) {
+        var res = $.ajax({
+            url: 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + self.text(),
+            data: {},
+            dataType: 'jsonp'
+        });
+        res.done(function (data) {
+            self.completeList(data["1"]);
+        });
+    }, this).extend({
+        throttle: 250
+    });
+}
+
+var autoComplete = new AutoCompleteVM();
+document.write(5 + 6);
+ko.applyBindings(autoComplete);
+
+</script>
+
+
+<h1>Start a game!</h1>
+
+
+<table>
+  <tr>
+    <td >palyers list
+		
+	   {{range .players}}
+{{.Firstname}}
+{{end}}
+ 
+
+
+
+
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+             <h2>HTML5 DataList Control<br/> <small>Dynamic Auto Complete with KnockoutJS and Wikipedia</small></h2> 
+            <input class="input-xxlarge" type="text" name="complteList" list="complteList" placeholder="type in a word, e.g. india..." data-bind='value: text, valueUpdate: "afterkeydown"'>
+            <datalist id="complteList" data-bind="foreach:completeList">
+                <option data-bind="value:$data" />
+            </datalist>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+	
+	
+	
+	</td>
+    <td >table image and drag</td>
+    <td >games</td>
+  </tr>
+</table>
+
+
+
+
+{{template "footer.html" .}}

@@ -1,0 +1,34 @@
+{{template "header.html" .}}
+{{if .events}}
+<table>
+  <thead>
+    <tr>
+      <th>Event Name</th>
+      <th>Location</th>
+      <th width="8%">Number of players</th>
+      <th  width="12%">Start Date/Time</th>
+      <th width="12%">Stop Date/Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .events}}
+    <tr>
+      <td>{{.Eventname}}</td>
+      <td>{{.Location}}</td>
+      <td>{{.Numplayers}}</td>
+      <td>{{.Start}}</td>
+	      <td>{{.Stop}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+<p>
+  <a id="nextPage" href="{{.nextPage}}">More results</a>
+</p>
+
+{{else}}
+<p>
+  No more results
+</p>
+{{end}}
+{{template "footer.html" .}}

@@ -9,6 +9,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
         <meta http-equiv="cleartype" content="on">
 
+
+		<!--
         <link rel="apple-touch-icon-precomposed" sizes="144x144" href="public/img/touch/apple-touch-icon-144x144-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="114x114" href="public/img/touch/apple-touch-icon-114x114-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="public/img/touch/apple-touch-icon-72x72-precomposed.png">
@@ -16,9 +18,11 @@
         <link rel="shortcut icon" sizes="196x196" href="public/img/touch/touch-icon-196x196.png">
         <link rel="shortcut icon" href="public/img/touch/apple-touch-icon.png">
 
-        <!-- Tile icon for Win8 (144x144 + tile color) -->
+        
         <meta name="msapplication-TileImage" content="public/img/touch/apple-touch-icon-144x144-precomposed.png">
         <meta name="msapplication-TileColor" content="#222222">
+		
+		-->
 
         <!-- SEO: If mobile URL is different from desktop URL, add a canonical link to the desktop page -->
         <!--
@@ -39,11 +43,52 @@
 
         <!-- This script prevents links from opening in Mobile Safari. https://gist.github.com/1042026 -->
         <!--
-        <script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>
+        <script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)]])(document,window.navigator,"standalone")</script>
         -->
 
-        <link rel="stylesheet" href="public/css/normalize.css">
+
+
+		<!-- 
+		<link rel="stylesheet" href="/public/css/vendor/bootstrap.css">
+		<script src="/public/js/vendor/jquery-2.1.0.js"></script>
+		<script src="/public/js/vendor/bootstrap.js"></script>  
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+				
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+		
+				<link rel="stylesheet" href="public/css/normalize.css">
         <link rel="stylesheet" href="public/css/main.css">
-        <script src="public/js/vendor/modernizr-2.7.1.min.js"></script>
+		-->
+		
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+		
+	
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.13/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.13/angular-route.min.js"></script> 
+			<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.13/angular-touch.js"></script> 
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.13/angular-resource.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap-tpls.js"></script>
+		
+		<script type="text/javascript" src="/public/js/vendor/ng-sortable/ng-sortable.min.js"></script>
+		<link rel="stylesheet" href="/public/js/vendor/ng-sortable/ng-sortable.min.css">
+		
+		
+
+	
+
+
+
+
     </head>
     <body>
+		<div id="fb-root"></div>
+		<script>(function(d, s, id) {
+		  var js, fjs = d.getElementsByTagName(s)[0];
+		  if (d.getElementById(id)) return;
+		  js = d.createElement(s); js.id = id;
+		  js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.3&appId=153994984803043";
+		  fjs.parentNode.insertBefore(js, fjs);
+		}(document, 'script', 'facebook-jssdk'));</script>

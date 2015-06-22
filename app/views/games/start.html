@@ -1,0 +1,23 @@
+[[template "header.html" .]]
+
+    <script src="/public/js/vendor/lodash.js"></script>
+    <script src="/public/js/games/app.js"></script>
+
+  <body >
+    <div data-ng-app="plunker" data-ng-controller="MainCtrl">
+    <form>
+      <div>
+        <label>title</label>
+        <input type="text" data-ng-model="item.title" list="comicstitle">
+      </div>
+      <div>
+        <input type="Button" value="Add" data-ng-click="addItem(item)">
+      </div>
+    </form>
+
+  <datalist id="comicstitle">
+    <option  data-ng-repeat="ttl in titles" value="{{ttl}}"> 
+  </datalist>
+  
+   </div>
+[[template "footer.html" .]]
