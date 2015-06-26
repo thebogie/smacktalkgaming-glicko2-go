@@ -89,34 +89,43 @@ func (c Seed) Index(kind string) revel.Result {
 			Items   []Item   `xml:"item"`
 		}
 
-		result := new(bggXML)
-		//get XML from api2
-		getboardgamegeekGames := "http://www.boardgamegeek.com/xmlapi2/search?type=boardgame,boardgameextension&query="
-
 		//TODO: how to get all the games? Run through alphabet?
-		search := "a"
+		//search := []string{"Dune", "Payday", "London+Cabbie+Game", "King", "San+Juan", "Takenoko", "Kingdom", "Tokaido", "FRAG",
+		//	"Castle+Keep", "Netrunner", "Sleeping+Queen", "Carcassonne", "Mr.+Jack+Pocket", "Lost+Cities", "Forbidden+Island",
+		//	"Tonga+Island", "Caesar", "Hot", "Tsuro", "Small+World", "The+Builders",
+		//	"Council", "Dungeoneer", "Survive:", "Bohnanza"}
+		search := []string{"Puerto+Rico"}
 
-		res, err := http.Get(getboardgamegeekGames + search)
-		if err == nil {
-			log.Println("GAME GET", res)
-			decoded := xml.NewDecoder(res.Body)
+		for _, value := range search {
 
-			err := decoded.Decode(result)
-			if err != nil {
-				log.Printf("Error: %v\n", err)
-			}
-			//http://boardgamegeek.com/boardgame/ID
-			log.Println("HERE:", result)
-			for _, value := range result.Items {
+			result := new(bggXML)
+			//get XML from api2
+			getboardgamegeekGames := "http://www.boardgamegeek.com/xmlapi2/search?type=boardgame,boardgameextension&query="
 
-				var game models.Game
+			log.Println("SEED: Searching BGG for Game:", value)
+			res, err := http.Get(getboardgamegeekGames + value)
+			log.Println("SEED: MEssage from  BGG for Game:", res, err)
+			if err == nil {
 
-				game.Name = value.Name.Value
-				game.Published = value.Yearpublished.Value
-				game.BGGLink = "http://boardgamegeek.com/boardgame/" + value.ID
+				decoded := xml.NewDecoder(res.Body)
 
-				UUIDnodeGame := neo.Create(&game)
-				log.Println("game added:", UUIDnodeGame)
+				err := decoded.Decode(result)
+				if err != nil {
+					log.Fatal(err)
+				}
+				//http://boardgamegeek.com/boardgame/ID
+				log.Println("HERE:", result)
+				for _, value := range result.Items {
+
+					var game models.Game
+
+					game.Name = value.Name.Value
+					game.Published = value.Yearpublished.Value
+					game.BGGLink = "http://boardgamegeek.com/boardgame/" + value.ID
+
+					UUIDnodeGame := neo.Create(&game)
+					log.Println("game added:", UUIDnodeGame)
+				}
 			}
 		}
 	}
@@ -142,7 +151,7 @@ func (c Seed) Index(kind string) revel.Result {
 		}
 
 		sum := 0
-		for i := 0; i < 1000; i++ {
+		for i := 0; i < 200; i++ {
 			var randomname randomnameObj
 
 			//adjective!
@@ -184,6 +193,34 @@ func (c Seed) Index(kind string) revel.Result {
 			}
 			sum += i
 		}
+
+	}
+	if kind == "onevent" {
+		seedaction(neo,
+			&models.Event{
+				Numplayers: "3",
+				Start:      "XXXXXXX",
+				Stop:       "YYYYYYY",
+			},
+			&models.Location{
+				Locationname: "2613 W 10th St, Austin, TX, United States",
+				Locationlat:  "30.284825",
+				Locationlng:  "-97.77455599999996",
+			},
+			[]*models.Player{
+				&models.Player{Firstname: "Olivia", Surname: "Gottlieb"},
+				&models.Player{Firstname: "Mitch", Surname: "Gottlieb"},
+				&models.Player{Firstname: "Myron", Surname: "Gottlieb"},
+			},
+			[]*models.Played_In{
+				&models.Played_In{Result: "WON", Place: "1"},
+				&models.Played_In{Result: "LOST", Place: "2"},
+				&models.Played_In{Result: "LOST", Place: "3"},
+			},
+			[]*models.Game{
+				&models.Game{Name: "Payday", Published: "1973"},
+			},
+		)
 
 	}
 

@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"reflect"
+	"strings"
 )
 
 type QueryObj struct {
@@ -21,15 +22,15 @@ type QueryObj struct {
 
 func query(load *neoism.CypherQuery) {
 
-	log.Println("RELFECT:", reflect.ValueOf(load))
+	//log.Println("RELFECT:", reflect.ValueOf(load))
 
 	neo := new(Neo4jObj)
 	neo.init()
 
-	neo.dbc.Session.Log = true
+	neo.dbc.Session.Log = false
 	neo.dbc.Cypher(load)
 
-	log.Println("AFTER CYPHER", load.Result)
+	//log.Println("AFTER CYPHER", load.Result)
 
 }
 
@@ -174,7 +175,7 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 			//retval = append(retval, node.NodeReturned.Data.(Player))
 
 			for key, v := range node.NodeReturned.Data {
-				log.Println("key , v ", key, v)
+				//log.Println("key , v ", key, v)
 				if len(v.(string)) > 0 {
 					player.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -231,7 +232,7 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 			//retval = append(retval, node.NodeReturned.Data.(Player))
 
 			for key, v := range node.NodeReturned.Data {
-				log.Println("key , v ", key, v)
+				//log.Println("key , v ", key, v)
 				if len(v.(string)) > 0 {
 					player.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -257,14 +258,24 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 
 func (qobj *QueryObj) MatchGamesByName(find string, playerUUID string) []Game {
 
+	if len(find) == 0 {
+
+		return []Game{}
+	}
+
 	retval := []Game{}
+
+	//dont search for 4 or less.. too many ogames
+	//if len(find) < 4 {
+	//	return retval
+	//}
 
 	res := []struct {
 		// `json:` tags matches column names in query
 		NodeReturned neoism.Node `json:"result"`
 	}{}
 
-	prop := neoism.Props{"sizeofstring": len(find), "findstring": find}
+	prop := neoism.Props{"sizeofstring": len(find), "findstring": find, "PROPUUID": playerUUID}
 
 	cq := neoism.CypherQuery{
 		Statement: `
@@ -308,6 +319,63 @@ func (qobj *QueryObj) MatchGamesByName(find string, playerUUID string) []Game {
 
 	}
 
+	//find all the other games in the system
+	res = []struct {
+		// `json:` tags matches column names in query
+		NodeReturned neoism.Node `json:"result"`
+	}{}
+
+	//localres := []Player{}
+	prop = neoism.Props{}
+	capletter := []byte(find)
+	startswithletter := "STARTS_WITH_" + strings.ToUpper(string(capletter[0]))
+
+	cq = neoism.CypherQuery{
+		Statement:  "match (n:Gamesifter)-[r:" + startswithletter + "]-(g:Game) return g as result",
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	log.Println("LOCAL USERS SIZE", len(res))
+
+	for _, node := range res {
+
+		//log.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
+		if len(node.NodeReturned.Data) > 0 {
+			//how do i get the Data struct into a Player stuct to send back
+			//read reflect again....
+			gameObj := new(Game)
+
+			game := reflect.ValueOf(&gameObj).Elem()
+			//tempPlayer = (Player)
+
+			//retval = append(retval, node.NodeReturned.Data.(Player))
+
+			for key, v := range node.NodeReturned.Data {
+				//log.Println("SEARCHBYLETTER: key , v ", key, v)
+				if len(v.(string)) > 0 {
+					game.Elem().FieldByName(key).SetString(v.(string))
+				}
+
+			}
+
+			alreadyexists := false
+			for _, game := range retval {
+				if game.UUID == gameObj.UUID {
+					alreadyexists = true
+				}
+			}
+			if !alreadyexists {
+				retval = append(retval, *gameObj)
+			}
+
+		}
+
+	}
+
+	log.Println("END OF GAME SEARCH", retval)
 	return retval
 }
 

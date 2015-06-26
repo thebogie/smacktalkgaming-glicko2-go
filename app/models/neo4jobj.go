@@ -17,6 +17,7 @@ import (
 	"github.com/jmcvetta/neoism"
 	"github.com/revel/revel"
 	"log"
+	"strings"
 
 	//"reflect"
 )
@@ -57,10 +58,20 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 	neo.init()
 
 	relateProps := relate.Create()
+	bundleProps := neoism.Props{"relateProps": relateProps, "UUIDnodeA": UUIDnodeA, "UUIDnodeB": UUIDnodeB}
+
+	log.Println("relateProps = ", relateProps)
 
 	var statementStr string
 
 	switch t := relate.(type) {
+
+	case *Starts_With:
+		statementStr = `
+			match a, b where a.UUID ={UUIDnodeA}
+			AND b.UUID = {UUIDnodeB} 
+			CREATE (a)-[r:` + relateProps["Relatename"].(string) + ` {relateProps}]->(b) RETURN r
+		`
 
 	case *Played_At:
 		statementStr = `
@@ -90,9 +101,7 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 		log.Println("NODE TYPE", t)
 	}
 
-	bundleProps := neoism.Props{"relateProps": relateProps, "UUIDnodeA": UUIDnodeA, "UUIDnodeB": UUIDnodeB}
-
-	log.Println("relateProps:", bundleProps)
+	log.Println("bndleprops:", bundleProps)
 
 	res1 := []struct {
 		Node neoism.Relationship `json:"relationship"`
@@ -103,8 +112,10 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 		Parameters: bundleProps,
 		Result:     &res1,
 	}
-	neo.dbc.Session.Log = false
+	neo.dbc.Session.Log = true
 	neo.dbc.Cypher(&cq)
+
+	log.Println("RES: ", res1)
 
 	return UUID
 }
@@ -119,17 +130,19 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 	log.Println("NEO4j CREATE")
 	neo.init()
 
+	var newNode *neoism.Node
+
 	//doesnt exist?
 	cargo := neo.Read(node)
 	log.Println("CARGO:", cargo.Data)
 	log.Println("CARGO:", len(cargo.Data))
 
 	if len(cargo.Data) == 0 {
-
+		var err error
 		newProps := node.Create()
 		log.Println("NewProps:", newProps)
 
-		newNode, err := neo.dbc.CreateNode(newProps)
+		newNode, err = neo.dbc.CreateNode(newProps)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -137,7 +150,10 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 		var label string
 
 		switch t := node.(type) {
+		case *Gamesifter:
+			label = "Gamesifter"
 		case *Game:
+
 			label = "Game"
 		case *Player:
 			label = "Player"
@@ -158,6 +174,26 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 	if len(UUID) == 0 {
 		UUID, _ = cargo.Data["UUID"].(string)
 
+	}
+
+	switch node.(type) {
+	case *Game:
+
+		var gamename string
+		if len(cargo.Data) == 0 {
+			gamename, _ = newNode.Property("Name")
+
+			log.Println("gamename")
+			//If game node connect the gamesifter
+			//create or find the GameCatalog node. This node's only purpose is to split the games
+			//up into alphabet and other for quicker searching.
+			UUIDGamesifter := neo.Create(&Gamesifter{Name: "Gamesifter"})
+			log.Println("gamsifter", UUIDGamesifter)
+
+			capletter := []byte(gamename)
+			startswithletter := "STARTS_WITH_" + strings.ToUpper(string(capletter[0]))
+			neo.CreateRelate(UUIDGamesifter, UUID, &Starts_With{Relatename: startswithletter})
+		}
 	}
 
 	return UUID

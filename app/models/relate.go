@@ -23,6 +23,11 @@ type Played_With struct {
 	UUID string
 }
 
+type Starts_With struct {
+	UUID       string
+	Relatename string
+}
+
 type Played_At struct {
 	UUID string
 }
@@ -65,6 +70,27 @@ func (r *Played_With) Create() neoism.Props {
 }
 
 func (r *Played_With) Read() string {
+
+	log.Println("Reading  ", reflect.TypeOf(r))
+	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	return "asdf"
+	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
+
+}
+
+/******** STARTS WITH *************/
+func (r *Starts_With) Create() neoism.Props {
+
+	log.Println("Creating  ", reflect.TypeOf(r))
+	r.UUID = getUUID()
+	return neoism.Props{
+		"UUID":       r.UUID,
+		"Relatename": r.Relatename,
+	}
+
+}
+
+func (r *Starts_With) Read() string {
 
 	log.Println("Reading  ", reflect.TypeOf(r))
 	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)

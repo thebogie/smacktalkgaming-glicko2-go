@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+
 	"time"
 )
 
@@ -26,6 +27,11 @@ type Event struct {
 	UUID       string
 }
 */
+
+type Gamesifter struct {
+	Name string
+	UUID string `json:"UUID"`
+}
 
 type Location struct {
 	Locationname string `json:"Locationname"`
@@ -188,7 +194,10 @@ func (n *Game) Create() neoism.Props {
 
 	log.Println("Creating  ", reflect.TypeOf(n))
 	n.UUID = getUUID()
-	return neoism.Props{"Name": n.Name, "Published": n.Published, "UUID": n.UUID}
+
+	//connect first letter in game name to gamesifter
+
+	return neoism.Props{"Name": n.Name, "Published": n.Published, "UUID": n.UUID, "BGGLink": n.BGGLink}
 
 }
 
@@ -197,6 +206,26 @@ func (n *Game) Read() string {
 	log.Println("Reading  ", reflect.TypeOf(n))
 	log.Println("Searching for  ", n.Name, n.Published, n.UUID)
 	return "MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
+
+}
+
+/******** Gamesifter Node ***********/
+func (n *Gamesifter) Create() neoism.Props {
+
+	//create or find the GameCatalog node. This node's only purpose is to split the games
+	//up into alphabet and other for quicker searching.
+
+	log.Println("Creating  ", reflect.TypeOf(n))
+	n.UUID = getUUID()
+	return neoism.Props{"Name": n.Name, "UUID": n.UUID}
+
+}
+
+func (n *Gamesifter) Read() string {
+
+	log.Println("Reading  ", reflect.TypeOf(n))
+	log.Println("Searching for  ", n.UUID)
+	return "MATCH (node:Gamesifter { Name:\"" + n.Name + "\" }) RETURN node"
 
 }
 
