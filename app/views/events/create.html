@@ -1,25 +1,41 @@
 [[template "header.html" .]]
-  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true&libraries=places&language=en-US"></script>
-<style>
-.item, .placeholder {
-    padding: 2px;
-    width: 50px;
-    height: 20px;
-    border: 1px solid #333;
-    background: #EEE;
-}
-.placeholder {
-    background: #AEF;
-}
+	<script>
+	var app = angular.module( 'smacktalk-get' ,  ['ui.bootstrap', 'ui.sortable'] );
+	var URLplayerslistautocomplete = [[url "Players.ListAutoComplete"]];
+	var URLgameslistautocomplete = [[url "Games.ListAutoComplete"]];
+	var URLeventstatus = [[url "Events.Status"]];
+	
+	</script>
+  	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true&libraries=places&language=en-US"></script>
+  	<script type="text/javascript" src="/public/js/app/directives/lists.js"></script>
+	<script type="text/javascript" src="/public/js/app/directives/httpFactory.js"></script>
+	
+	<script type="text/javascript" src="/public/js/app/controllers/gamelistctrl.js"></script>
+	<script type="text/javascript" src="/public/js/app/controllers/playerlistctrl.js"></script>
+	<script type="text/javascript" src="/public/js/app/controllers/locationlistctrl.js"></script>	
+	
 
-</style>
-
+	<style>
+	.item, .placeholder {
+	    padding: 2px;
+	    width: 50px;
+	    height: 20px;
+	    border: 1px solid #333;
+	    background: #EEE;
+	}
+	.placeholder {
+	    background: #AEF;
+	}
+	
+	</style>
+</header>
+<body>
  <div data-ng-app="smacktalk-get" >
   <div data-ng-controller="EventCtrl" ng-cloak >
 
 	<div  data-ng-show="showPage1" class='container-fluid' data-ng-controller="PlayerListCtrl">
-	   	<h4>Players</h4>
-	    <input type="text" ng-model="currentplayerlist" placeholder="Players involved" 
+	   	<h4>List of Players in Event</h4>
+	    <input type="text" ng-model="currentplayerlist" placeholder="Choose Players in Event" 
 			typeahead="player as player.selectName for player in updateList($viewValue)" 
 			typeahead-loading="loadingPlayers" 
 		 	typeahead-on-select='onSelect($item, $model, $label); currentplayerlist =""; '
@@ -115,8 +131,8 @@
 			<thead>
 				<tr >
 	   				<th>Player</th>
-	   				<th>Place</th>
-					<th>Results</th>
+	   				<th>Result</th>
+					<th>Place</th>
 	 			</tr>
 			</thead>
 			<tbody>
@@ -166,355 +182,6 @@
 
 <Script>
 
-var app = angular.module( 'smacktalk-get' ,  ['ui.bootstrap', 'ui.sortable'] );
-
-app.directive('googleplace' , ['Lists',  function(Lists) {
-    return {
-        require: 'ngModel',
-        link: function(scope, element, attrs, model) {
-            var options = {
-                types: []
-            };
-            scope.gPlace = new google.maps.places.Autocomplete(element[0], options);
-
-            google.maps.event.addListener(scope.gPlace, 'place_changed', function() {
-                scope.$apply(function() {
-					var place = scope.gPlace.getPlace();
-					var listObj = {
-						Locationname: element.val(),
-						Locationlng: place.geometry.location.lng().toString(),
-						Locationlat: place.geometry.location.lat().toString(),
-					};
-					
-					Lists.addList(listObj, "locationList" );
-					console.log("WORK?" + JSON.stringify(Lists.getList("locationList")  ) ) ;
-                    model.$setViewValue(element.val());                
-                });
-            });
-        }
-    };
-}]);
-
-app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
-   return {
-    	getPlayersAutoComplete: function(item) {
-       //since $http.get returns a promise,
-       //and promise.then() also returns a promise
-       //that resolves to whatever value is returned in it's 
-       //callback argument, we can return that.
-
-       		return $http.get([[url "Players.ListAutoComplete"]].replace("<nil>", item)).then(function(result) {
-		
-           return result.data;
-       	});
-     } , 
-	 	getGamesAutoComplete: function(item) {
-       return $http.get([[url "Games.ListAutoComplete"]].replace("<nil>", item)).then(function(gameresult) {
-           return gameresult.data;
-       });
-     } ,
-	  	getEvent: function(item) {
-       return $http.get([[url "Events.Status"]].replace("<nil>", item)).then(function(result) {
-           return result.data;
-       });
-     } ,
-	
-		httpstartEvent: function(eventcargo) {
-			console.log("eventcargo:" + JSON.stringify(eventcargo));
-			return $http({method: 'POST', 
-					url: '/events/start',  
-					data:$filter('json')(eventcargo) 
-					}).then(function(data, status, headers, config) {
-					 return data;
-			});
-	   } ,
-		httpcommitEvent: function(eventcargo) {
-				
-			return $http({method: 'POST', 
-					url: '/events/commit',  
-					data:$filter('json')(eventcargo) 
-					}).then(function(data, status, headers, config) {
-					 return data;
-			});
-	   }
-	}
-}]);
-
-
-app.factory('Lists', function () {
-    var userName = "John Doe";
-
-    // Shared Models
-	var locationList = [];
-	var playerList = [];
-	var gameList = [];
-	
-	
-    return {
-        getUserName: function () {
-             return userName;                   
-        },
-		setPlayerResult: function (index, result) {
-			playerList[index].playedin["Result"] = result;
-            return true;                   
-        },
-		setPlayerPlace: function (index, place) {
-			playerList[index].playedin["Place"] = place;
-            return true;                   
-        },
-		
-		//
-		//TODO for playerlist only right now
-		orderList: function(listType){
-			
-			for (var i = 0; i < playerList.length; i++) {
-			
-				if (i == 0) {
-					//playerList[i].playedin["Result"] = "WIN";
-				}
-				playerList[i].playedin["Place"] = (i+1).toString();
-				   
-			}
-			
-		},
-		getList: function (listType) {
-			switch (listType) {
-			  case "gameList":
-
-			    return gameList;
-			    break;
-			  case "playerList":
-
-			    return playerList;
-			    break;
-			  case "locationList":
-
-			    return locationList;
-			    break;
-			  default:
-			   
-			}                  
-        },
-		addList: function(listObj, listType) {
-			switch (listType) {
-			  case "gameList":
-				
-				var objalreadypresent  = false;
-				for (var i = 0; i < gameList.length; i++) {
-				    if (gameList[i].UUID == listObj.UUID ) {
-						objalreadypresent = true;
-					}
-				    //Do something
-				}
-			   	if (objalreadypresent == false) {
-			   		gameList.push(listObj);
-				}
-			   
-				
-			    break;
-			  case "playerList":
-				var objalreadypresent  = false;
-				for (var i = 0; i < playerList.length; i++) {
-				    if (playerList[i].UUID == listObj.UUID ) {
-						objalreadypresent = true;
-					
-					}
-				   
-				}
-			   	if (objalreadypresent == false) {
-					
-					listObj["playedin"] = {
-						Result:"", 
-						Place:""};
-			   		playerList.push(listObj);
-				}
-			   
-				this.orderList("playerList");
-			    break;
-				
-			  case "locationList":
-		console.log("listobj" + JSON.stringify(listObj));
-				var objalreadypresent  = false;
-				for (var i = 0; i < locationList.length; i++) {
-				    if (locationList[i].UUID == listObj.UUID ) {
-						objalreadypresent = true;
-					}
-				    //Do something
-				}
-			   	if (objalreadypresent == false) {
-			   		locationList.push(listObj);
-				}
-			
-				
-			   
-				
-			    break;
-			  default:
-			    console.log("Sorry, we are out of " + expr + ".");
-			}   
-			
-		},
-		removeList: function(uuid, listType) {
-			switch (listType) {
- 			case "locationList":
-
-				locationList = [];
-
-			   
-			    break;
-				
- 			case "gameList":
-
-				for (var i = 0; i < gameList.length; i++) {
-				    if (gameList[i].UUID == uuid ) {
-						gameList.splice(i,1);
-						break;
-					}
-				    //Do something
-				}
-
-			   
-			    break;
-			  case "playerList":
-
-				for (var i = 0; i < playerList.length; i++) {
-				    if (playerList[i].UUID == uuid ) {
-						playerList.splice(i,1);
-						break;
-					}
-				    //Do something
-				}
-
-			   
-			    break;
-			  default:
-			    console.log("Sorry, we are out of " + expr + ".");
-			}   
-			
-		}
-
-    }
-	    
-
-});
-
-
-
-
-app.controller( 'GameListCtrl' , ['$scope', '$http', 'Lists', 'myHttpFactory', function( $scope , $http, Lists, myHttpFactory) {
-
- 	$scope.activelist = [];
-
-	$scope.updateList = function(item) {
-
-		 return myHttpFactory.getGamesAutoComplete(item).then(function(data) {
-			for (x in data) {
-    			//console.log("HERE" +  JSON.stringify(data[x]) + x) ;
-				data[x]["selectName"] = data[x]["Name"] + " (" + data[x]["Published"] + ")";
-			}
-			//console.log("DATA" + JSON.stringify(data));
-		    //return [{"Name":"Carcassonne","Published":"2000","UUID":"e3ed6302-f868-437f-b754-6646061c1363"},{"Name":"Caesar & Cleopatra","Published":"1997","UUID":"77b3f5f2-d710-469b-b4c8-cefa5b2974ff"}];
-			return data;
-		 });	
-  	};
-
-	$scope.onSelect = function ($item, $model, $label) {
-		Lists.addList($model , "gameList");
-		$scope.activelist = Lists.getList("gameList");
-		//console.log("LIST: " + JSON.stringify(Lists.getList("gameList")));
-	};
-
-  	$scope.removeItem = function( uuid ) { 
-		//console.log("removeItem" + uuid);
-		Lists.removeList(uuid , "gameList");
-		$scope.activelist = Lists.getList("gameList");
-
- 	}
-	
-	$scope.$on('HideDIVEventFromEventCtrl',function(event, data){
-          $scope.hideDIV = data;
-    });
-
-}]);
-
-app.controller( 'PlayerListCtrl' , ['$scope', '$http', 'Lists', 'myHttpFactory', function( $scope , $http, Lists, myHttpFactory) {
-
-  	$scope.activelist = [];
-	$scope.numplayers = 0;
-	
-	//event to hide div
-	$scope.$on('HideDIVEventFromEventCtrl',function(event, data){
-          $scope.hideDIV = data;
-    });
-	
-	$scope.onSelect = function ($item, $model, $label) {
-		Lists.addList($model , "playerList");
-		$scope.activelist = Lists.getList("playerList");
-		//console.log("LIST: " + JSON.stringify(Lists.getList("playerList")));
-		$scope.numplayers = $scope.activelist .length;
-	};
-	
-	$scope.updateList =  function( item ) { 
-	
-	   return myHttpFactory.getPlayersAutoComplete(item).then(function(data) {
-
- 			for (x in data) {
-    			console.log("HERE" +  JSON.stringify(data[x]) + x) ;
-				//TODO add nickname
-				data[x]["selectName"] = data[x]["Firstname"] + " " + data[x]["Surname"];
-			}
-			//console.log("DATA" + JSON.stringify(data));
-		    return data;
-		 });	
-  	};
-	
-  	$scope.removeItem = function( uuid ) { 
-		//console.log("removeItem" + uuid);
-		Lists.removeList(uuid , "playerList");
-		$scope.activelist = Lists.getList("playerList");
-		$scope.numplayers = $scope.activelist.length;
-	
-		
- 	}
-
-
-}]);
-
-
-
-app.controller( 'LocationListCtrl' , ['$scope', 'Lists', function( $scope , Lists) {
-
- 	$scope.permlist = [];
- 	$scope.activelist = {};
-	$scope.index = 0;
-	
-
-    $scope.gPlace;
-	
-	
-	$scope.$on('HideDIVEventFromEventCtrl',function(event, data){	
-          $scope.hideDIV = data;
-    });
-	
-	$scope.updateLocationList = function () {
-		console.log("updateLocationList: ");
-	};
-
-	$scope.updateList =  function( item ) { 
-		console.log("LIST: " + JSON.stringify(Lists.getList("locationList")));
-		return $scope.permlist;
-	};
-
-  	$scope.removeItem = function( location ) { 
-		Lists.removeList(location , "locationList");
-		$scope.activelist = Lists.getList("locationList");
- 	};
-
-//lists.set =  $scope.activelist;
-
-}]);
-
-
 
 app.controller( 'EventTimerCtrl' , ['$scope', 'Lists', 'myHttpFactory', '$interval', function( $scope , Lists , myHttpFactory, $interval) {
 	
@@ -524,7 +191,7 @@ app.controller( 'EventTimerCtrl' , ['$scope', 'Lists', 'myHttpFactory', '$interv
 	$scope.eventUUID = "";
 	
 	//TODO make this a http get to get the servers definitions
-	$scope.possibleresults = [ "DEMOLISH", "WIN" , "TIE", "LOSE", "QUIT", "RAGE QUIT" ];
+	$scope.possibleresults = [ "DEMOLISH", "WON" , "TIE", "LOST", "QUIT", "RAGE QUIT" ];
 	$scope.possibleplaces = [ "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20" ];
 
 	$scope.gamelist = Lists.getList("gameList");
@@ -546,11 +213,11 @@ app.controller( 'EventTimerCtrl' , ['$scope', 'Lists', 'myHttpFactory', '$interv
 	$scope.SetInitResult = function(index) {
 		console.log("choiceresult" + $scope.chosenresult+ index);
 		if (index < 1) {
-			Lists.setPlayerResult(index, "WIN");
-			return "WIN";
+			Lists.setPlayerResult(index, "WON");
+			return "WON";
 		}
-		Lists.setPlayerResult(index, "LOSE");
-		return "LOSE";
+		Lists.setPlayerResult(index, "LOST");
+		return "LOST";
 	};
 	
 	$scope.SetInitPlace = function(index) {
@@ -634,6 +301,7 @@ app.controller( 'EventTimerCtrl' , ['$scope', 'Lists', 'myHttpFactory', '$interv
 			myHttpFactory.getEvent(UUID).then(function(data) {
 				
 				$scope.locationlist = Lists.getList("locationList");
+				//alert("HERE" + JSON.stringify(data));
 				$scope.eventname = data.Eventname;
 				$scope.starttime = new Date(data.Start);
 				
@@ -727,7 +395,7 @@ app.controller( 'EventCtrl' , ['$http', '$window', '$scope', 'Lists', 'myHttpFac
 			//$scope.$broadcast( "ShowPage2EventFromEventCtrl", results.data.UUIDEvt );
 
 		});
-		alert("CINNUT INCOKETE");
+		//alert("CINNUT INCOKETE");
 		$window.location.href = "/";
 		
 	}

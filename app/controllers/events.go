@@ -217,10 +217,8 @@ func (c Events) Start() revel.Result {
 
 func (c Events) Status(event string) revel.Result {
 	fmt.Println("STRING", event)
-	evtret := EventCargoJSON{}
 
-	//query := new(models.QueryObj)
-	//evtret.Event := query.GetEvent(event)
+	evtret := new(models.QueryObj).GetEvent(event)
 
 	return c.RenderJson(evtret)
 }

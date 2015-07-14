@@ -1,0 +1,30 @@
+
+queries: MATCH (n:Event)-[r]->(m) WHERE n.Start =~ '2015-06.*' return n,r,m
+
+delete all: MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
+
+MATCH (n { name: 'Andres' }) SET n.surname = 'Taylor' RETURN n
+
+**** Delete all relationships from and to node 
+match (n:Event {UUID:"2afe20a5-8b27-4b2d-af08-f2da4fb23356"})-[r]-() delete n,r
+
+***********
+
+MATCH (n:Event {UUID:"ad911b7e-dfc4-4f8e-9e78-22fed643a54e"}) SET n.Start = "2015-06-30T00:30:14-05:00", n.Stop="2015-06-30T01:30:14-05:00" return n
+
+match a, b where
+a.UUID = '78d9801a-4881-45c1-a282-87d21f305df8'
+AND
+b.UUID = 'e450e4d4-0309-4652-a2e0-04b000eab076'
+CREATE (a)-[r:PLAYED_IN {UUID:'d3348501-b60e-45ff-b2b2-dfb7e52d4436' , Result:'WIN', Place:'1'}]->(b) RETURN r
+
+match a, b where
+a.UUID = '82c8f887-3108-45b4-9435-33f3c270d706'
+AND
+b.UUID = 'e450e4d4-0309-4652-a2e0-04b000eab076'
+CREATE (a)-[r:PLAYED_IN {UUID:'5534c48d-4ed8-4eac-8003-1b427dc59702' , Result:'LOSE', Place:'2'}]->(b) RETURN r
+
+
+MATCH (n)-[r:PLAYED_IN {Result:"WON"}]-(m) return n, r, m
+
+MATCH (n)-[r:PLAYED_IN {Result:"LOSE"}]-(m) return r

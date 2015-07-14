@@ -1,7 +1,5 @@
 package models
 
-//queries: MATCH (n:Event)-[r]->(m) WHERE n.Start =~ '201506.*' return n,r,m
-// delete all: MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
 import (
 
 	//"encoding/json"
