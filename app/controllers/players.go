@@ -8,10 +8,42 @@ import (
 	"mitchgottlieb.com/smacktalkgaming/app/models"
 	//"mitchgottlieb.com/smacktalkgaming/app/routes"
 	//"strings"
+	//"encoding/json"
 )
 
 type Players struct {
 	Application
+}
+
+func (c Players) Status(player string) revel.Result {
+
+	playerret := new(models.QueryObj).GetPlayer(player)
+
+	return c.RenderJson(playerret)
+}
+
+func (c Players) OverallStats(playerUUID string) revel.Result {
+
+	//var events []models.Event
+	//var playedin []models.Played_In
+	//var games []models.Game
+
+	type Row struct {
+		Stat  string `json:"stat"`
+		Value int    `json:"value"`
+	}
+
+	retval := []Row{}
+
+	events, playedins, games := new(models.QueryObj).GetOverallStats(playerUUID)
+
+	if len(events) > 0 && len(playedins) > 0 && len(games) > 0 {
+		retval = append(retval, Row{Stat: "Total Events Played", Value: len(events)})
+		retval = append(retval, Row{Stat: "Total Games Played", Value: len(games)})
+
+	}
+
+	return c.RenderJson(events)
 }
 
 func (c Players) CreateList(setting string) revel.Result {

@@ -1,10 +1,9 @@
 package models
 
 import (
-
 	//"encoding/json"
-	//"fmt"
 	"errors"
+	//"fmt"
 	"github.com/jmcvetta/neoism"
 	"log"
 	"strconv"
@@ -25,7 +24,7 @@ func query(load *neoism.CypherQuery) {
 	neo := new(Neo4jObj)
 	neo.init()
 
-	neo.dbc.Session.Log = false
+	neo.dbc.Session.Log = true
 	neo.dbc.Cypher(load)
 
 	//log.Println("AFTER CYPHER", load.Result)
@@ -410,6 +409,126 @@ func (qobj *QueryObj) GetPlayerCurrentEvent(uuid string) string {
 	for _, node := range res {
 		retval = node.CurrentEvent
 	}
+	return retval
+}
+
+/******************************************************/
+
+func (qobj *QueryObj) GetOverallStats(uuid string) ([]Event, []Played_In, []Game) {
+
+	type OverallStatsObj struct {
+		Playedins []neoism.Relationship `json:"playedins"`
+		Events    []neoism.Node         `json:"events"`
+		Games     []neoism.Node         `json:"games"`
+	}
+
+	var events []Event
+	var playedins []Played_In
+	var games []Game
+
+	res := []OverallStatsObj{}
+	//res := []interface{}{}
+
+	//res := make(map[string]resObj)
+
+	prop := neoism.Props{"PROPUUID": uuid}
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			MATCH (p:Player {UUID: {PROPUUID}})-[r:PLAYED_IN]-(m:Event)-[t:PLAYED_WITH]-(g:Game)
+			RETURN COLLECT(r) AS playedins , COLLECT(m) AS events , COLLECT( DISTINCT g ) AS games
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	if len(res) < 1 {
+		return events, playedins, games
+	}
+
+	for _, node := range res {
+
+		for _, event := range node.Events {
+			result := &Event{}
+			err := FillStruct(event.Data, result)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			events = append(events, *result)
+		}
+
+		for _, game := range node.Games {
+
+			result := &Game{}
+			err := FillStruct(game.Data, result)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			games = append(games, *result)
+		}
+
+		for _, playedin := range node.Playedins {
+
+			result := &Played_In{}
+			err := FillStruct(playedin.Data.(map[string]interface{}), result)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			playedins = append(playedins, *result)
+		}
+
+	}
+	return events, playedins, games
+}
+
+/******************************************************/
+
+func (qobj *QueryObj) GetPlayer(uuid string) Player {
+
+	retval := Player{}
+
+	res := []struct {
+		// `json:` tags matches column names in query
+		NodeReturned neoism.Node `json:"result"`
+	}{}
+
+	prop := neoism.Props{"PROPUUID": uuid}
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			MATCH (p:Player {UUID: {PROPUUID}}) RETURN p as result
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	for _, node := range res {
+
+		if len(node.NodeReturned.Data) > 0 {
+			playerObj := new(Player)
+
+			player := reflect.ValueOf(&playerObj).Elem()
+
+			for key, v := range node.NodeReturned.Data {
+				log.Println("key , v ", key, v)
+				if len(v.(string)) > 0 {
+					player.Elem().FieldByName(key).SetString(v.(string))
+				}
+
+			}
+			retval = *playerObj
+
+		}
+
+	}
+
 	return retval
 }
 

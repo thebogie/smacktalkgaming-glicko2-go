@@ -191,7 +191,7 @@ app.controller( 'EventTimerCtrl' , ['$scope', 'Lists', 'myHttpFactory', '$interv
 	$scope.eventUUID = "";
 	
 	//TODO make this a http get to get the servers definitions
-	$scope.possibleresults = [ "DEMOLISH", "WON" , "TIE", "LOST", "QUIT", "RAGE QUIT" ];
+	$scope.possibleresults = [ "DEMOLISH", "WON" , "TIE", "LOST", "SKUNK", "DROP", "QUIT", "RAGE QUIT" ];
 	$scope.possibleplaces = [ "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20" ];
 
 	$scope.gamelist = Lists.getList("gameList");

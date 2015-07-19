@@ -1,78 +1,263 @@
 [[template "header.html" .]]
+	<script> 
+		var app = angular.module( 'smacktalk-profile' ,  [ 'data-table' , 'LocalStorageModule'] ); 
+		
+		[[if .events]]
+			var eventsList = [[.events]];
+			console.log("EVENTS", eventsList);
+		[[end]]
+		[[if .playedins]]
+			var playedinsList = [[.playedins]];
+			console.log("Playedin", playedinsList);
+		[[end]]
+		[[if .games]]
+			var gamesList = [[.games]];
+			console.log("Games", gamesList);
+		[[end]]
+		
+		
+		app.config( function ( localStorageServiceProvider) {
+			localStorageServiceProvider.setPrefix('playerprofile');		
+		});
+		
+		
+		var URLplayeroverallstats = [[url "Players.OverallStats"]];
+		var URLplayerstatus = [[url "Players.Status"]];
+		var playerUUID = [[.retval.PLAYERPROFILEUUID.value]];
+		
 
- <table border="1" style="width:300px">
-<thead>
-<tr>
-<script>
 
-  	//window.alert(supportsLocalStorage());
-</script>
-<th>Stat</th>
-<th>Value</th>
-
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>[[.retval.NUMBEROFGAMES.tag]]</td>
-<td>[[.retval.NUMBEROFGAMES.value]]</td>
-
-</tr>
-
-<tr>
-<td>[[.retval.NUMBEROFGAMESWON.tag]]</td>
-<td>[[.retval.NUMBEROFGAMESWON.value]]</td>
-</tr>
-
-<tr>
-<td>[[.retval.TOTALGAMESLOST.tag]]</td>
-<td>[[.retval.TOTALGAMESLOST.value]]</td>
-</tr>
-<tbody>
-
-</table>
-<hr>
-[[if .retval2]]
-<table border="1">
-  <thead>
-    <tr>
-	<th>Game</th>
-      <th>Demolish</th>
-      <th>Won</th>
-      <th>Lost</th>
-      <th>Drop</th>
-    </tr>
-  </thead>
-  <tbody >
-    [[range $key, $value := .retval2]]
-    <tr>
-	<td>[[$key]]</td>
-	[[with $value]] 
-	 
+	</script>
 	
-	<td> [[if $value.DEMOLISH]] [[$value.DEMOLISH]] [[else]] 0 [[end]] </TD>
-		<td> [[if $value.WON]] [[$value.WON]] [[else]] 0 [[end]] </TD>
+	
+	<script type="text/javascript" src="/public/js/app/directives/httpFactory.js"></script>
+	<script type="text/javascript" src="/public/js/app/controllers/player/playerprofileCtrl.js"></script>
 
-	<td> [[if $value.LOST]] [[$value.LOST]] [[else]] 0 [[end]] </TD>
+	<link rel="stylesheet" href="/public/js/vendor/angular-data-table/dataTable.css">
+	
+	<script type="text/javascript" src="/public/js/vendor/angular-data-table/dataTable.helpers.js"></script>
+	<style>
+		body {
+	  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
+	  font-style: normal;
+	  font-weight: 300;
+	  font-size: 1.4rem;
+	  line-height: 2rem;
+	  letter-spacing: 0.01rem;
+	  color: #212121;
+	  background-color: #b4dcb3;
+	  -webkit-font-smoothing: antialiased;
+	  -moz-osx-font-smoothing: grayscale;
+	  text-rendering: optimizeLegibility;
+	}
+	</style>
+	
+</head>
+<body  data-ng-app="smacktalk-profile">
 
-	<td> [[if $value.DROP]] [[$value.DROP]] [[else]] 0 [[end]] </TD>
 
+<div ng-controller="PlayerProfileCtrl">
+	<form name="updateplayerprofile" novalidate ng-submit="update();">
+		<div class=" mdl-grid" class="form-section">
 
-	[[end]]
+			<div class="mdl-cell mdl-cell--2-col mdl-textfield mdl-js-textfield textfield-demo">
+    		<input maxlength="20" class="mdl-textfield__input" type="text" ng-model="playerprofile.Nickname" name="nickname"/>
+  			<b>Nickname</b>
+			</div>
 
-    </tr>
-    [[end]]
-  </tbody>
+			<div class="mdl-cell mdl-cell--2-col mdl-textfield mdl-js-textfield textfield-demo">
+    			 <input class="mdl-textfield__input" type="text" ng-model="playerprofile.Birthdate" name="birthdate" ng-pattern="/^(19|20)\d{2}$/"/>
+  				<b>Birth Year</b><br><span ng-show="updateplayerprofile.birthdate.$invalid">between 1900(super old and/or dead) and 2999 .. the future</span>
+			</div>	
+			
+			<div class="mdl-cell mdl-cell--2-col mdl-textfield mdl-js-textfield textfield-demo">
+    			 <input class="mdl-textfield__input" type="text" ng-model="playerprofile.Alignment" name="alignment" />
+  				<b>Alignment</b>
+			</div>	
+					
+			<div class="mdl-cell mdl-cell--1-col mdl-cell--middle">
+    			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" ng-disabled="updateplayerprofile.birthdate.$invalid">update</button>	
+			</div>		
+		</div>
+	</form>
+</div>
+<br><br>
+
+<div ng-controller="OverAllStatsCtrl" ng-model="overallstats">
+<table border="0">
+<tr>
+	<td style="width:5px"></td>
+	<td  style='text-align: center; 
+				vertical-align: middle; 
+				width: 87px; height: 96px; 
+				background-image: url("/public/img/profile/charactersheetbackground.png");
+				background-repeat: no-repeat; '> 
+				
+		<b>{{overallstats.eventsinfo.total}}</b>
+	</td>
+	<td style="width:3px"></td>
+	<td>  <span><b>{{overallstats.eventsinfo.title}}</b></span> </td>
+	<td style="width:5%"></td>
+	
+	<td style=' text-align: center; 
+				vertical-align: middle; 
+				width: 91px; height: 96px; 
+				background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+				background-repeat: no-repeat; '> 
+		<b>{{overallstats.stats.won.total}}</b>
+	</td>
+	<td style="width:3px"></td>
+	<td> <span><b>{{overallstats.stats.won.title}}</b></span> </td>
+</tr>
+
+<tr>
+	<td style="width:5px"></td>
+	<td style='	text-align: center; 
+				vertical-align: middle; 
+				width: 87px; height: 96px; 
+				background-image: url("/public/img/profile/charactersheetbackground.png");
+				background-repeat: no-repeat; '> 
+				
+		<b>{{overallstats.gamesinfo.total}}</b>
+	</td>
+	<td style="width:3px"></td>
+	<td> <span><b>{{overallstats.gamesinfo.title}}</b></span> </td>
+	<td ></td>
+	
+	<td style=' text-align: center; 
+				vertical-align: middle; 
+				width: 91px; height: 96px; 
+				background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+				background-repeat: no-repeat; '> 
+		<b>{{overallstats.stats.lost.total}}</b>
+	</td>
+	<td style="width:3px"></td>
+	<td> <span><b>{{overallstats.stats.lost.title}}</b></span> </td>
+</tr>
+
+<tr>
+	<td style="width:5px"></td>
+	<td style='	text-align: center; 
+				vertical-align: middle; 
+				width: 87px; height: 96px; 
+				background-image: url("/public/img/profile/charactersheetbackground.png");
+				background-repeat: no-repeat; '> 
+				
+		<b>{{overallstats.playersinfo.total}}</b>
+	</td>
+	<td style="width:3px"></td>
+	<td> <span><b>{{overallstats.playersinfo.title}}</b></span> </td>
+	<td ></td>
+	
+	<td style=' text-align: center; 
+				vertical-align: middle; 
+				width: 91px; height: 96px; 
+				background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+				background-repeat: no-repeat; '> 
+		<b>{{overallstats.stats.other.total}}</b>
+	</td>
+	<td style="width:3px"></td>
+	<td> <span><b>{{overallstats.stats.other.title}}</b></span> </td>
+</tr>
 </table>
-<p>
-  <a id="nextPage" href="[[.nextPage]]">More results</a>
-</p>
+</div>
 
-[[else]]
-<p>
-  No more results
-</p>
-[[end]]
+<script>
+app.controller( 'OverAllStatsCtrl' , ['$scope', function( $scope ) {
+	$scope.eventsinfo = {
+		'total': eventsList.length,
+		'title': "Events",
+	};
+	$scope.gamesinfo = {
+		'total': gamesList.length,
+		'title': "Games",
+	};
+	$scope.playersinfo = {
+		'total': 666,
+		'title': "Players",
+	};
+	
+	
+	$scope.stats = {
+		won: {
+			'total': 0,
+			'title': "Won Demolish",
+			'DEMOLISH': 0,
+			'WON': 0,
+		},
+		lost: {
+			'total': 0,
+			'title': "Lost Skunk",
+			'LOST': 0,
+			'SKUNK': 0,
+		},
+		other: {
+			'total': 0,
+			'title': "Tie Drop Quit",
+			'TIE': 0,
+			'DROP': 0,
+			'RAGE': 0,
+			'RAGEQUIT': 0,
+		}
+		
+	};
+	
+	for (var i = 0; i < playedinsList.length; i++) {
+		switch(playedinsList[i].Result) {
+			case "DEMOLISH":
+				$scope.stats.won.total++;
+				$scope.stats.won.DEMOLISH.total++;
+				break;
+			case "WON":
+				$scope.stats.won.total++;
+				$scope.stats.won.WON.total++;
+				break;
+			case "TIE":
+				$scope.stats.other.total++;
+				$scope.stats.other.TIE.total++;
+				break;
+			case "LOST":
+				$scope.stats.lost.total++;
+				$scope.stats.lost.LOST.total++;
+				break;
+			case "SKUNK":
+				$scope.stats.lost.total++;
+				$scope.stats.lost.SKUNK.total++;
+				break;
+			case "DROP":
+				$scope.stats.other.total++;
+				$scope.stats.other.DROP.total++;
+				break;
+			case "QUIT":
+				$scope.stats.other.total++;
+				$scope.stats.other.QUIT.total++;
+				break;
+			case "RAGE QUIT":
+				$scope.stats.other.total++;
+				$scope.stats.other.RAGEQUIT.total++;
+				break;
+				
+		}
+	}
+	
+	
+	$scope.overallstats = {
+		eventsinfo: $scope.eventsinfo,
+		gamesinfo: $scope.gamesinfo,
+		playersinfo: $scope.playersinfo,
+		stats: $scope.stats,
+	
+	};
+	
+	
+	
+	
+
+
+}]);
+</script>
+
+<hr>
 
 
 [[template "footer.html" .]]

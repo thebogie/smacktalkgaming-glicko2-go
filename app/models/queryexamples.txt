@@ -3,7 +3,7 @@ queries: MATCH (n:Event)-[r]->(m) WHERE n.Start =~ '2015-06.*' return n,r,m
 
 delete all: MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
 
-MATCH (n { name: 'Andres' }) SET n.surname = 'Taylor' RETURN n
+MATCH (n { UUID: '835f0e03-40d2-4b18-8d16-3f68459bedb2' }) SET n.Nickname = 'MasterBlaster' RETURN n
 
 **** Delete all relationships from and to node 
 match (n:Event {UUID:"2afe20a5-8b27-4b2d-af08-f2da4fb23356"})-[r]-() delete n,r

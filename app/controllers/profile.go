@@ -17,6 +17,9 @@ func getProfile(UUID string) map[string]map[string]string {
 	//log.Println("RETURN", qobj.TotalNumberOfGamesPlayed())
 	//retval := map[string]interface{}{}
 	retval := map[string]map[string]string{
+		"PLAYERPROFILEUUID": map[string]string{
+			"tag":   "",
+			"value": UUID},
 		"NUMBEROFGAMES": map[string]string{
 			"tag":   "Total Games played",
 			"value": qobj.TotalNumberOfGamesPlayed(UUID)},
@@ -31,20 +34,21 @@ func getProfile(UUID string) map[string]map[string]string {
 	return retval
 }
 
-func getOverall(UUID string) map[string]map[string]int {
+func getOverall(playerUUID string) map[string]map[string]int {
 
 	qobj := new(models.QueryObj)
-	return qobj.OverallGameRecord(UUID)
+	return qobj.OverallGameRecord(playerUUID)
 }
 
 func (c Profile) Show(uuid string) revel.Result {
 
 	retval := getProfile(uuid)
-	retval2 := getOverall(uuid)
+	events, playedins, games := new(models.QueryObj).GetOverallStats(uuid)
+	//retval2 := getOverall(uuid)
 
-	log.Println("RETVAL2: ", retval2)
+	//log.Println("RETVAL2: ", retval2)
 
-	return c.Render(retval, retval2)
+	return c.Render(retval, events, playedins, games)
 }
 
 func (c Profile) Index() revel.Result {

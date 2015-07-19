@@ -1,7 +1,17 @@
 //set this from the golang variables
-//var URLplayerslistautocomplete;
-//var URLgameslistautocomplete;
-//var URLeventstatus;
+URLplayerslistautocomplete = typeof(URLplayerslistautocomplete) == 'undefined' ? 0 : URLplayerslistautocomplete;
+URLgameslistautocomplete = typeof(URLgameslistautocomplete) == 'undefined' ? 0 : URLgameslistautocomplete;
+
+URLeventstatus = typeof(URLeventstatus) == 'undefined' ? 0 : URLeventstatus;
+
+
+URLplayerstatus = typeof(URLplayerstatus) == 'undefined' ? 0 : URLplayerstatus;
+URLplayeroverallstats = typeof(URLplayeroverallstats) == 'undefined' ? 0 : URLplayeroverallstats;
+
+
+//
+//var ;
+//var ;
 
 app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
    return {
@@ -22,11 +32,22 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
        });
      } ,
 	  	getEvent: function(item) {
-       return $http.get(URLeventstatus.replace("<nil>", item)).then(function(result) {
-           return result.data;
-       });
+			return $http.get(URLeventstatus.replace("<nil>", item)).then(function(result) {
+				return result.data;
+			});
      } ,
-	
+	   	getPlayer: function(item) {
+			//alert(item);
+			return $http.get(URLplayerstatus.replace("<nil>", item)).then(function(result) {
+				return result.data;
+			});
+	 },
+	   	getPlayerOverallStats: function(item) {
+			//alert(item);
+			return $http.get(URLplayeroverallstats.replace("<nil>", item)).then(function(result) {
+				return result.data;
+			});
+	 },
 		httpstartEvent: function(eventcargo) {
 			console.log("eventcargo:" + JSON.stringify(eventcargo));
 			return $http({method: 'POST', 
@@ -44,6 +65,6 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 					}).then(function(data, status, headers, config) {
 					 return data;
 			});
-	   }
+	   } 
 	}
 }]);

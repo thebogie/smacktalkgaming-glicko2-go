@@ -11,6 +11,8 @@ GET     	/logout                                 Application.Logout
 GET     	/profile/:uuid	             			Profile.Show
 GET     	/players/list                           Players.List
 POST		/players/createlist                    	Players.CreateList
+GET			/players/status/:player                 Players.Status
+GET			/players/overallstats/:player 			Players.OverallStats
 GET     	/players/auto/:auto               		Players.ListAutoComplete
 GET     	/games/auto/:auto               		Games.ListAutoComplete
 GET     	/events/list                           	Events.List
