@@ -5,8 +5,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/jmcvetta/neoism"
+	"github.com/revel/revel"
 	"io/ioutil"
-	"log"
+	//"log"
 	"net/http"
 	"reflect"
 
@@ -37,6 +38,7 @@ type Location struct {
 	Locationname string `json:"Locationname"`
 	Locationlng  string `json:"Locationlng"`
 	Locationlat  string `json:"Locationlat"`
+	Locationtz   string `json:"Locationtz"`
 	UUID         string `json:"UUID"`
 }
 
@@ -61,13 +63,14 @@ type Player struct {
 	Nickname     string `json:"Nickname"`
 	Birthdate    string `json:"Birthdate"`
 	UUID         string `json:"UUID"`
-	CurrentEvent string `json:"Currentevent`
+	CurrentEvent string `json:"Currentevent"`
+	Alignment    string `json:"Alignment"`
 }
 
 func getUUID() string {
 	newUUID, uuidErr := newUUID()
 	if uuidErr != nil {
-		log.Panic("CREATE UUID ERROR:", uuidErr)
+		revel.ERROR.Panic("CREATE UUID ERROR:", uuidErr)
 	}
 	return newUUID
 
@@ -102,7 +105,7 @@ func getEventName() string {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("EVENT adj", string(jsonDataFromHttp))
+		revel.TRACE.Println("EVENT adj", string(jsonDataFromHttp))
 
 		err = json.Unmarshal([]byte(jsonDataFromHttp), &eventname.adj) // here!
 
@@ -122,7 +125,7 @@ func getEventName() string {
 			panic(err)
 		}
 
-		log.Println("EVENT: noun", string(jsonDataFromHttp))
+		revel.TRACE.Println("EVENT: noun", string(jsonDataFromHttp))
 
 		err = json.Unmarshal([]byte(jsonDataFromHttp), &eventname.noun) // here!
 		if err != nil {
@@ -134,15 +137,15 @@ func getEventName() string {
 	retval.WriteString(eventname.noun.Word + " ")
 	retval.WriteString("event")
 
-	log.Println("ADJ RETURN", retval.String())
-	log.Println("ADJ RETURN", eventname)
+	revel.TRACE.Println("ADJ RETURN", retval.String())
+	revel.TRACE.Println("ADJ RETURN", eventname)
 
 	return retval.String()
 }
 
 /******** LOCATION NODE *************/
 func (n *Location) Create() neoism.Props {
-	log.Println("Creating  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
 	n.UUID = getUUID()
 	return neoism.Props{
 		"Locationlat":  n.Locationlat,
@@ -153,8 +156,8 @@ func (n *Location) Create() neoism.Props {
 
 func (n *Location) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(n))
-	log.Println("Searching for  ", n.Locationlat, n.Locationlng)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Searching for  ", n.Locationlat, n.Locationlng)
 	return "MATCH (node:Location { Locationlat:\"" + n.Locationlat + "\", Locationlng:\"" + n.Locationlng + "\" }) RETURN node"
 }
 
@@ -162,7 +165,7 @@ func (n *Location) Read() string {
 
 func (n *Event) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
 
 	n.UUID = getUUID()
 	n.Eventname = getEventName()
@@ -183,8 +186,8 @@ func (n *Event) Create() neoism.Props {
 
 func (n *Event) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(n))
-	log.Println("Searching for  ", n.Eventname)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Searching for  ", n.Eventname)
 	return "MATCH (node:Event { Eventname:\"" + n.Eventname + "\" }) RETURN node"
 
 }
@@ -192,7 +195,7 @@ func (n *Event) Read() string {
 /******** GAME NODE *************/
 func (n *Game) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
 	n.UUID = getUUID()
 
 	//connect first letter in game name to gamesifter
@@ -203,8 +206,8 @@ func (n *Game) Create() neoism.Props {
 
 func (n *Game) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(n))
-	log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
 	return "MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
 
 }
@@ -215,7 +218,7 @@ func (n *Gamesifter) Create() neoism.Props {
 	//create or find the GameCatalog node. This node's only purpose is to split the games
 	//up into alphabet and other for quicker searching.
 
-	log.Println("Creating  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
 	n.UUID = getUUID()
 	return neoism.Props{"Name": n.Name, "UUID": n.UUID}
 
@@ -223,8 +226,8 @@ func (n *Gamesifter) Create() neoism.Props {
 
 func (n *Gamesifter) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(n))
-	log.Println("Searching for  ", n.UUID)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Searching for  ", n.UUID)
 	return "MATCH (node:Gamesifter { Name:\"" + n.Name + "\" }) RETURN node"
 
 }
@@ -232,7 +235,7 @@ func (n *Gamesifter) Read() string {
 /******** PLAYER NODE *************/
 func (n *Player) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
 	n.UUID = getUUID()
 	return neoism.Props{
 		"Firstname": n.Firstname,
@@ -244,9 +247,9 @@ func (n *Player) Create() neoism.Props {
 }
 
 func (n *Player) Read() string {
-	log.Println("Reading  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(n))
 
-	log.Println("Searching for  ", n.Firstname, n.Surname, n.UUID)
+	revel.TRACE.Println("Searching for  ", n.Firstname, n.Surname, n.UUID)
 	return "MATCH (node:Player { Firstname:\"" + n.Firstname + "\", Surname:\"" + n.Surname + "\" }) RETURN node"
 
 }

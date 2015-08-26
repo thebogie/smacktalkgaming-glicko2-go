@@ -1,6 +1,20 @@
 [[template "header.html" .]]
 	<script> 
-		var app = angular.module( 'smacktalk-profile' ,  [ 'data-table' , 'LocalStorageModule'] ); 
+		var app = angular.module( 'smacktalk-profile' ,  [ 'ngMessages', 'ngMaterial' , 'LocalStorageModule'] ); 
+		
+		var URLplayeroverallstats = [[url "Players.OverallStats"]];
+		var URLplayerstatus = [[url "Players.Status"]];
+
+		[[if .permission]]
+			var permission = [[.permission]];
+			console.log("PERMISSION", permission);
+		[[end]]
+
+		
+		[[if .playerinfo]]
+			var playerinfo = [[.playerinfo]];
+			console.log("EVENTS", playerinfo);
+		[[end]]
 		
 		[[if .events]]
 			var eventsList = [[.events]];
@@ -21,182 +35,440 @@
 		});
 		
 		
-		var URLplayeroverallstats = [[url "Players.OverallStats"]];
-		var URLplayerstatus = [[url "Players.Status"]];
-		var playerUUID = [[.retval.PLAYERPROFILEUUID.value]];
+
+		
 		
 
 
 	</script>
-	
+
 	
 	<script type="text/javascript" src="/public/js/app/directives/httpFactory.js"></script>
-	<script type="text/javascript" src="/public/js/app/controllers/player/playerprofileCtrl.js"></script>
 
-	<link rel="stylesheet" href="/public/js/vendor/angular-data-table/dataTable.css">
-	
-	<script type="text/javascript" src="/public/js/vendor/angular-data-table/dataTable.helpers.js"></script>
 	<style>
-		body {
-	  font-family: 'RobotoDraft', 'Roboto', 'Helvetica Neue, Helvetica, Arial', sans-serif;
-	  font-style: normal;
-	  font-weight: 300;
-	  font-size: 1.4rem;
-	  line-height: 2rem;
-	  letter-spacing: 0.01rem;
-	  color: #212121;
-	  background-color: #b4dcb3;
-	  -webkit-font-smoothing: antialiased;
-	  -moz-osx-font-smoothing: grayscale;
-	  text-rendering: optimizeLegibility;
+	.inputdemoErrors .inputErrorsApp {
+		min-height: 48px; 
 	}
+	
+	#stattable td {
+		padding:0; margin:0;
+	}
+
+	#stattable {
+		border-collapse: collapse;
+	}
+  
 	</style>
-	
+
 </head>
-<body  data-ng-app="smacktalk-profile">
+<body  style="background-color: #b4dcb3;"  data-ng-app="smacktalk-profile">
 
 
-<div ng-controller="PlayerProfileCtrl">
-	<form name="updateplayerprofile" novalidate ng-submit="update();">
-		<div class=" mdl-grid" class="form-section">
 
-			<div class="mdl-cell mdl-cell--2-col mdl-textfield mdl-js-textfield textfield-demo">
-    		<input maxlength="20" class="mdl-textfield__input" type="text" ng-model="playerprofile.Nickname" name="nickname"/>
-  			<b>Nickname</b>
-			</div>
 
-			<div class="mdl-cell mdl-cell--2-col mdl-textfield mdl-js-textfield textfield-demo">
-    			 <input class="mdl-textfield__input" type="text" ng-model="playerprofile.Birthdate" name="birthdate" ng-pattern="/^(19|20)\d{2}$/"/>
-  				<b>Birth Year</b><br><span ng-show="updateplayerprofile.birthdate.$invalid">between 1900(super old and/or dead) and 2999 .. the future</span>
-			</div>	
-			
-			<div class="mdl-cell mdl-cell--2-col mdl-textfield mdl-js-textfield textfield-demo">
-    			 <input class="mdl-textfield__input" type="text" ng-model="playerprofile.Alignment" name="alignment" />
-  				<b>Alignment</b>
-			</div>	
+    <md-tabs md-dynamic-height md-border-bottom md-stretch-tabs="always">
+	    <md-tab label="Character Sheet">
+        <md-content layout-padding style="background-color: #b4dcb3;" >
+			<div  layout="column"   ng-controller="OverAllStatsCtrl" ng-model="overallstats">
+			<table  border="0"  id="DDtable">
+			<tr>
+				<td></td>
+				<td>
+					<div  ng-controller="ProfileCtrl"  ng-submit="update(projectForm);">
+					  <md-content  style="background-color: #b4dcb3;" layout="row"  layout-padding>
+						<form   name="projectForm">
+						 <md-input-container>
+							<label>Nickname</label>
+							<input   style="width:150px" name="nickname" ng-model="project.nickname">
+							<div ng-messages="projectForm.nickname.$error"> 
+							  <div ng-message="md-maxlength">The name has to be less than 30 characters long.</div>
+							</div>
+
+						 </md-input-container>
+						 <md-input-container>
+							<label>Birth Year</label>
+							<input  type="number" style="width:80px" name="birthdate" ng-model="project.birthdate" min="1900" max="2999">
+
+							<div ng-messages="projectForm.birthdate.$error">
+							  <div ng-message="min">There is no way you were born before 1900... unless. Time traveler?</div>
+							  <div ng-message="max">There is no way you were born after 2999... unless. Time traveler?</div>
+							</div>
+
+						  </md-input-container>
+						  
+						  
+						  <md-input-container>
+							<label>Alignment</label>
+							<md-select style="width:150px" name="alignment" ng-model="project.alignment" placeholder="Alignment">
+									<md-option ng-repeat="alignment in alignments" value="{{alignment}}">{{alignment}}</md-option>
+							</md-select>
+						  
+
+						  </md-input-container>
+						  <md-button  ng-show="somethingchanged(projectForm)" class="md-raised md-primary" name="updateButton">Update Profile</md-button>
+						</form>
+					  </md-content>
+					</div>
+				</td>
+				<td></td>
+
+				<td  colspan="0"   style=' text-align: center; 
+								vertical-align: middle; 
+								width: 278px; height: 200px; 
+								background-image: url("/public/img/profile/sketch.png");
+								background-repeat: no-repeat; '> 
+						
+				</td>
+				<td></td>
+				<td></td>
+				<td></td>
+
+
+
+			</tr>
+			<tr style="height:110px" >
+				<td style="width:5px"></td>
+				<td  style='text-align: center; 
+							vertical-align: middle; 
+							width:200px; height: 100px; 
+							background-image: url("/public/img/profile/armourclass.png");
+							background-repeat: no-repeat; '> 
+							
 					
-			<div class="mdl-cell mdl-cell--1-col mdl-cell--middle">
-    			<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" ng-disabled="updateplayerprofile.birthdate.$invalid">update</button>	
-			</div>		
+				</td>
+				<td style="width:10px"></td>
+				<td style=' text-align: center; 
+							vertical-align: middle; 
+							width: 116px; height: 88px; 
+							background-image: url("/public/img/profile/hitpoints.png");
+							background-repeat: no-repeat; '> 
+					
+				</td>
+				<td style="width:10px"></td>
+				<td></td>
+				<td></td>
+				
+			</tr>
+			
+			</table>
+			<br><br>
+			
+			<table border="0" id="stattable">
+			<tr>
+				<td style="width:5px"></td>
+				<td  style='text-align: center; 
+							vertical-align: middle; 
+							width: 87px; height: 96px; 
+							background-image: url("/public/img/profile/charactersheetbackground.png");
+							background-repeat: no-repeat; '> 
+							
+					<b>{{overallstats.eventsinfo.total}}</b>
+				</td>
+				<td style="width:3px"></td>
+				<td>  <span><b>{{overallstats.eventsinfo.title}}</b></span> </td>
+				<td style="width:15%"></td>
+				
+				<td style=' text-align: center; 
+							vertical-align: middle; 
+							width: 91px; height: 96px; 
+							background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+							background-repeat: no-repeat; '> 
+					<b>{{overallstats.stats.won.total}}</b>
+				</td>
+				<td style="width:5px"></td>
+				<td> <span><b>{{overallstats.stats.won.title}}</b></span> </td>
+			</tr>
+
+			<tr>
+				<td style="width:5px"></td>
+				<td style='	text-align: center; 
+							vertical-align: middle; 
+							width: 87px; height: 96px; 
+							background-image: url("/public/img/profile/charactersheetbackground.png");
+							background-repeat: no-repeat; '> 
+							
+					<b>{{overallstats.gamesinfo.total}}</b>
+				</td>
+				<td style="width:5px"></td>
+				<td> <span><b>{{overallstats.gamesinfo.title}}</b></span> </td>
+				<td style="width:15%"></td>
+				
+				<td style=' text-align: center; 
+							vertical-align: middle; 
+							width: 91px; height: 96px; 
+							background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+							background-repeat: no-repeat; '> 
+					<b>{{overallstats.stats.lost.total}}</b>
+				</td>
+				<td style="width:3px"></td>
+				<td> <span><b>{{overallstats.stats.lost.title}}</b></span> </td>
+			</tr>
+
+			<tr>
+				<td style="width:5px"></td>
+				<td style='	text-align: center; 
+							vertical-align: middle; 
+							width: 87px; height: 96px; 
+							background-image: url("/public/img/profile/charactersheetbackground.png");
+							background-repeat: no-repeat; '> 
+							
+					<b>{{overallstats.playersinfo.total}}</b>
+				</td>
+				<td style="width:5px"></td>
+				<td> <span><b>{{overallstats.playersinfo.title}}</b></span> </td>
+				<td style="width:15%"></td>
+				
+				<td style=' text-align: center; 
+							vertical-align: middle; 
+							width: 91px; height: 96px; 
+							background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+							background-repeat: no-repeat; '> 
+					<b>{{overallstats.stats.other.total}}</b>
+				</td>
+				<td style="width:3px"></td>
+				<td> <span><b>{{overallstats.stats.other.title}}</b></span> </td>
+				
+
+			</tr>
+			</table>
+			</div>
+        </md-content>
+      </md-tab>
+
+	  <md-tab    label="Events">
+		<div  ng-controller="EventsProfileCtrl" layout="column" ng-submit="update(projectForm);">
+		  <md-content  style="background-color: #b4dcb3;"   layout-padding>
+
+		  </md-content>
 		</div>
-	</form>
-</div>
-<br><br>
+      </md-tab>
+	  
+	  
+	  <md-tab label="CS with GRID">
+        <md-content layout-padding style="background-color: #b4dcb3;" >
+			<div layout="row" layout-wrap  ng-controller="OverAllStatsCtrl" ng-model="overallstats">
+				<div  flex="25" ng-controller="ProfileCtrl"  ng-submit="update(projectForm);">
+					  <md-content  style="background-color: #b4dcb3;" layout="row"  layout-padding>
+						<form   name="projectForm">
+						 <md-input-container>
+							<label>Nickname</label>
+							<input   style="width:150px" name="nickname" ng-model="project.nickname">
+							<div ng-messages="projectForm.nickname.$error"> 
+							  <div ng-message="md-maxlength">The name has to be less than 30 characters long.</div>
+							</div>
 
-<div ng-controller="OverAllStatsCtrl" ng-model="overallstats">
-<table border="0">
-<tr>
-	<td style="width:5px"></td>
-	<td  style='text-align: center; 
-				vertical-align: middle; 
-				width: 87px; height: 96px; 
-				background-image: url("/public/img/profile/charactersheetbackground.png");
-				background-repeat: no-repeat; '> 
-				
-		<b>{{overallstats.eventsinfo.total}}</b>
-	</td>
-	<td style="width:3px"></td>
-	<td>  <span><b>{{overallstats.eventsinfo.title}}</b></span> </td>
-	<td style="width:5%"></td>
-	
-	<td style=' text-align: center; 
-				vertical-align: middle; 
-				width: 91px; height: 96px; 
-				background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
-				background-repeat: no-repeat; '> 
-		<b>{{overallstats.stats.won.total}}</b>
-	</td>
-	<td style="width:3px"></td>
-	<td> <span><b>{{overallstats.stats.won.title}}</b></span> </td>
-</tr>
+						 </md-input-container>
+						 <md-input-container>
+							<label>Birth Year</label>
+							<input  type="number" style="width:80px" name="birthdate" ng-model="project.birthdate" min="1900" max="2999">
 
-<tr>
-	<td style="width:5px"></td>
-	<td style='	text-align: center; 
-				vertical-align: middle; 
-				width: 87px; height: 96px; 
-				background-image: url("/public/img/profile/charactersheetbackground.png");
-				background-repeat: no-repeat; '> 
-				
-		<b>{{overallstats.gamesinfo.total}}</b>
-	</td>
-	<td style="width:3px"></td>
-	<td> <span><b>{{overallstats.gamesinfo.title}}</b></span> </td>
-	<td ></td>
-	
-	<td style=' text-align: center; 
-				vertical-align: middle; 
-				width: 91px; height: 96px; 
-				background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
-				background-repeat: no-repeat; '> 
-		<b>{{overallstats.stats.lost.total}}</b>
-	</td>
-	<td style="width:3px"></td>
-	<td> <span><b>{{overallstats.stats.lost.title}}</b></span> </td>
-</tr>
+							<div ng-messages="projectForm.birthdate.$error">
+							  <div ng-message="min">There is no way you were born before 1900... unless. Time traveler?</div>
+							  <div ng-message="max">There is no way you were born after 2999... unless. Time traveler?</div>
+							</div>
 
-<tr>
-	<td style="width:5px"></td>
-	<td style='	text-align: center; 
-				vertical-align: middle; 
-				width: 87px; height: 96px; 
-				background-image: url("/public/img/profile/charactersheetbackground.png");
-				background-repeat: no-repeat; '> 
+						  </md-input-container>
+						  
+						  
+						  <md-input-container>
+							<label>Alignment</label>
+							<md-select style="width:150px" name="alignment" ng-model="project.alignment" placeholder="Alignment">
+									<md-option ng-repeat="alignment in alignments" value="{{alignment}}">{{alignment}}</md-option>
+							</md-select>
+						  
+
+						  </md-input-container>
+						  <md-button  ng-show="somethingchanged(projectForm)" class="md-raised md-primary" name="updateButton">Update Profile</md-button>
+						</form>
+					  </md-content>
+				</div>
+				<div flex="75" >
+					<table><tr><td  colspan="0"   style=' text-align: center; 
+								vertical-align: middle; 
+								width: 278px; height: 200px; 
+								background-image: url("/public/img/profile/sketch.png");
+								background-repeat: no-repeat; '> 
+						
+								</td></tr>
+					</table>
+				</div>
 				
-		<b>{{overallstats.playersinfo.total}}</b>
-	</td>
-	<td style="width:3px"></td>
-	<td> <span><b>{{overallstats.playersinfo.title}}</b></span> </td>
-	<td ></td>
+				<div flex="100" style="height: 10px;" >
+				</div>
+				
+				<div flex="5">
+				
+				</div>
+				
+				<div flex="95">
+				
+					<table  border="0"  id="DDtable">
+						<tr style="height:110px" >
+							<td style="width:5px"></td>
+							<td  style='text-align: center; 
+										vertical-align: middle; 
+										width:200px; height: 100px; 
+										background-image: url("/public/img/profile/armourclass.png");
+										background-repeat: no-repeat; '> 
+										
+								
+							</td>
+							<td style="width:10px"></td>
+							<td style=' text-align: center; 
+										vertical-align: middle; 
+										width: 116px; height: 88px; 
+										background-image: url("/public/img/profile/hitpoints.png");
+										background-repeat: no-repeat; '> 
+								
+							</td>
+						
+						</tr>
+					</table>
+				</div>
+					
+				<div flex="50">
+					<table border="0" id="stattable">
+					<tr>
+						<td style="width:5px"></td>
+						<td  style='text-align: center; 
+									vertical-align: middle; 
+									width: 87px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackground.png");
+									background-repeat: no-repeat; '> 
+									
+							<b>{{overallstats.eventsinfo.total}}</b>
+						</td>
+						<td style="width:3px"></td>
+						<td>  <span><b>{{overallstats.eventsinfo.title}}</b></span> </td>
+						<td style="width:15%"></td>
+						
+						<td style=' text-align: center; 
+									vertical-align: middle; 
+									width: 91px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+									background-repeat: no-repeat; '> 
+							<b>{{overallstats.stats.won.total}}</b>
+						</td>
+						<td style="width:5px"></td>
+						<td> <span><b>{{overallstats.stats.won.title}}</b></span> </td>
+					</tr>
+
+					<tr>
+						<td style="width:5px"></td>
+						<td style='	text-align: center; 
+									vertical-align: middle; 
+									width: 87px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackground.png");
+									background-repeat: no-repeat; '> 
+									
+							<b>{{overallstats.gamesinfo.total}}</b>
+						</td>
+						<td style="width:5px"></td>
+						<td> <span><b>{{overallstats.gamesinfo.title}}</b></span> </td>
+						<td style="width:15%"></td>
+						
+						<td style=' text-align: center; 
+									vertical-align: middle; 
+									width: 91px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+									background-repeat: no-repeat; '> 
+							<b>{{overallstats.stats.lost.total}}</b>
+						</td>
+						<td style="width:3px"></td>
+						<td> <span><b>{{overallstats.stats.lost.title}}</b></span> </td>
+					</tr>
+
+					<tr>
+						<td style="width:5px"></td>
+						<td style='	text-align: center; 
+									vertical-align: middle; 
+									width: 87px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackground.png");
+									background-repeat: no-repeat; '> 
+									
+							<b>{{overallstats.playersinfo.total}}</b>
+						</td>
+						<td style="width:5px"></td>
+						<td> <span><b>{{overallstats.playersinfo.title}}</b></span> </td>
+						<td style="width:15%"></td>
+						
+						<td style=' text-align: center; 
+									vertical-align: middle; 
+									width: 91px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+									background-repeat: no-repeat; '> 
+							<b>{{overallstats.stats.other.total}}</b>
+						</td>
+						<td style="width:3px"></td>
+						<td> <span><b>{{overallstats.stats.other.title}}</b></span> </td>
+						
+
+					</tr>
+					</table>
+				</div>
+			</div>
+        </md-content>
+      </md-tab>
+	  
+	  
+	  
+	  
+	  
+	  
+    </md-tabs>
 	
-	<td style=' text-align: center; 
-				vertical-align: middle; 
-				width: 91px; height: 96px; 
-				background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
-				background-repeat: no-repeat; '> 
-		<b>{{overallstats.stats.other.total}}</b>
-	</td>
-	<td style="width:3px"></td>
-	<td> <span><b>{{overallstats.stats.other.title}}</b></span> </td>
-</tr>
-</table>
-</div>
+
+
+
+
 
 <script>
+
+app.controller('GridTest', ['$scope', function($scope) {
+
+
+}]);
+
+
+
+
+
+
+
 app.controller( 'OverAllStatsCtrl' , ['$scope', function( $scope ) {
 	$scope.eventsinfo = {
 		'total': eventsList.length,
-		'title': "Events",
+		'title': "EVENTS",
 	};
 	$scope.gamesinfo = {
 		'total': gamesList.length,
-		'title': "Games",
+		'title': "GAMES",
 	};
 	$scope.playersinfo = {
 		'total': 666,
-		'title': "Players",
+		'title': "PLAYERS",
 	};
 	
 	
 	$scope.stats = {
 		won: {
 			'total': 0,
-			'title': "Won Demolish",
+			'title': "WON or DEMOLISH",
 			'DEMOLISH': 0,
 			'WON': 0,
 		},
 		lost: {
 			'total': 0,
-			'title': "Lost Skunk",
+			'title': "LOST or SKUNK",
 			'LOST': 0,
 			'SKUNK': 0,
 		},
 		other: {
 			'total': 0,
-			'title': "Tie Drop Quit",
+			'title': "TIE or DROP or QUIT",
 			'TIE': 0,
 			'DROP': 0,
-			'RAGE': 0,
+			'QUIT': 0,
 			'RAGEQUIT': 0,
 		}
 		
@@ -255,9 +527,80 @@ app.controller( 'OverAllStatsCtrl' , ['$scope', function( $scope ) {
 
 
 }]);
+
+app.controller('EventsProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHttpFactory) {
+
+
+
+}]);
+
+app.controller('ProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHttpFactory) {
+
+	if (typeof(playerinfo.UUID) == 'undefined') {
+		alert("plaerUUID is undefined");
+		return;
+	} ;
+	
+	
+
+	
+	$scope.alignments = [
+		"Lawful Good",	
+		"Neutral Good",
+		"Chaotic Good",
+		"Lawful Neutral",	
+		"(True) Neutral",
+		"Chaotic Neutral",
+		"Lawful Evil",	
+		"Neutral Evil",	
+		"Chaotic Evil"
+	
+	];
+	
+
+	$scope.project = {
+		nickname: playerinfo.Nickname,
+		birthdate: parseInt(playerinfo.Birthdate),
+		alignment: playerinfo.Alignment
+	};
+	
+	$scope.update = function( playerinfodelta ) { 
+		var playercargo = playerinfo;
+		
+				console.log("playerinfodelta", playerinfodelta);
+		
+		playercargo.Alignment = playerinfodelta.alignment.$viewValue;
+		playercargo.Birthdate = playerinfodelta.birthdate.$viewValue;
+		playercargo.Nickname = playerinfodelta.nickname.$viewValue;
+		
+		console.log("Playercargo", playercargo);
+		
+		myHttpFactory.updatePlayer(playercargo).then(function(results) {
+					console.log("data:"  +JSON.stringify(results));
+
+		});
+	
+		
+ 	};
+   $scope.somethingchanged = function(projectForm) {
+   
+	   if (permission.readonly == "true") {
+			return 0;
+	   }
+   
+		var retval = 0;
+		//console.log("alignment", projectForm.alignment);
+		//|| projectForm.alignment.$viewValue != playerinfo.Alignment
+		if (projectForm.birthdate.$viewValue != playerinfo.Birthdate || 
+			projectForm.nickname.$viewValue != playerinfo.Nickname || 
+			((typeof(projectForm.alignment) != 'undefined') && projectForm.alignment.$viewValue != playerinfo.Alignment) ) {
+	
+			retval = 1;
+		}
+         return retval;   
+    };  
+
+}]);
 </script>
-
-<hr>
-
 
 [[template "footer.html" .]]

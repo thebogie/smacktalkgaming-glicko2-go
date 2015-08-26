@@ -1,26 +1,66 @@
-[[set . "title" "Home"]]
+
 [[template "header.html" .]]
 
 [[if .me]]
-<h3>Welcome, [[.me.first_name]] [[.me.last_name]]</h3>
-<img src="" />
 
-<table border="1">
-  <tbody>
-    <tr>
-	<td><a href="players/list">List all Players</a> </td></tr>
-	<td><a href="events/list">List all Events</a> </td></tr>
-     <Tr> <td><a href="profile/[[.me.playerUUID]]">Profile</a> </td> </tr>
-	     <Tr> <td><a href="events/create">Record Event</a> </td> </tr>
+</head>
+<body data-ng-app="smacktalk-index">
+<script>
+var w = window,
+    d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0],
+    x = w.innerWidth || e.clientWidth || g.clientWidth,
+    y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+	//md-row-height-gt-lg="4:3" md-row-height="1:1"
+//alert(x + ' × ' + y);
+</script>
 
-    </tr>
+	<div   ng-controller="GridTest">
+	  <md-grid-list
+			 md-cols="2" md-cols-gt-lg="4" 
+			 md-row-height="16:9" md-row-height-gt-lg="1:1"
+			md-gutter="12px" md-gutter-gt-sm="8px" >
+			
+		<md-grid-tile style="background:#ffff8d;" >
+			<h3>Welcome, [[.me.first_name]] [[.me.last_name]]</h3>
+		</md-grid-tile>
+		
+		<md-grid-tile style="background:#b388ff;" >
+			<h3><a href="profile/[[.me.playerUUID]]">Profile</a></h3>
+		</md-grid-tile>
+		
+		<md-grid-tile style="background:##b9f6ca;" >
+			<h3><a href="events/create">Record Event</a></h3>
+		</md-grid-tile>
+		
+		<md-grid-tile style="background:#84ffff" >
+			<h3><a href="players/list">List all Players</a></h3>
+		</md-grid-tile>
+		
+		
+	  </md-grid-list>
+	</div>
+	
+	
 
-</tbody>
-</table>
+<script>
+
+var app = angular.module( 'smacktalk-index' ,  [ 'ngMessages', 'ngMaterial' , 'LocalStorageModule'] ); 
+app.controller('GridTest', ['$scope', function($scope) {
+
+
+}]);
+</script>
+
+
 
 [[template "footer.html" .]]
 
 [[else]]
+<!-- FRONT PAGE carousel -->
+
+
 
 <link rel="stylesheet" type="text/css" href="/public/js/vendor/slick/1.5.0/slick.css"/>
 <link rel="stylesheet" type="text/css" href="/public/js/vendor/slick/1.5.0/slick-theme.css"/>
@@ -28,7 +68,6 @@
 <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
 <script type="text/javascript" src="/public/js/vendor/slick/1.5.0/slick.js"></script>
-
 
 
  <div align="center">
@@ -53,7 +92,7 @@ $(document).ready(function(){
 	$('.autoplay').slick({
 		dots: true,
   infinite: true,
-  slidesToShow: 2,
+  slidesToShow: 1,
   slidesToScroll: 1,
   centerMode: true,
   variableWidth: true,

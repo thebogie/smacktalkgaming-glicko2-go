@@ -1,14 +1,14 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/revel/revel"
 	//"github.com/revel/revel/cache"
 	//"golang.org/x/crypto/bcrypt"
 	"mitchgottlieb.com/smacktalkgaming/app/models"
 	//"mitchgottlieb.com/smacktalkgaming/app/routes"
 	//"strings"
-	//"encoding/json"
+	"encoding/json"
 )
 
 type Players struct {
@@ -46,8 +46,44 @@ func (c Players) OverallStats(playerUUID string) revel.Result {
 	return c.RenderJson(events)
 }
 
+/* TODO: make update player info based on properites versus hardocded */
+/********************* only birthdate, nickname, alignment ************/
+func (c Players) Update() revel.Result {
+
+	playerdelta := models.Player{}
+	query := new(models.QueryObj)
+	revel.TRACE.Println("UPDATE PLAYER POST REQUEST")
+
+	revel.TRACE.Println("Body", c.Request.Body)
+	revel.TRACE.Println("params", c.Params)
+
+	err := json.NewDecoder(c.Request.Body).Decode(&playerdelta)
+	if err != nil {
+		//panic(err)
+	}
+	revel.TRACE.Println("cargocommit:", playerdelta)
+
+	if playerdelta.UUID == c.Session["playerUUID"] {
+
+		currentplayer := query.GetPlayer(playerdelta.UUID)
+
+		if currentplayer.Nickname != playerdelta.Nickname {
+			query.SetValue("Player", playerdelta.UUID, "Nickname", playerdelta.Nickname)
+		}
+		if currentplayer.Birthdate != playerdelta.Birthdate {
+			query.SetValue("Player", playerdelta.UUID, "Birthdate", playerdelta.Birthdate)
+		}
+		if currentplayer.Alignment != playerdelta.Alignment {
+			query.SetValue("Player", playerdelta.UUID, "Alignment", playerdelta.Alignment)
+		}
+
+	}
+
+	return c.RenderJson(query.GetPlayer(playerdelta.UUID))
+}
+
 func (c Players) CreateList(setting string) revel.Result {
-	fmt.Println("HERE", setting)
+	revel.TRACE.Println("HERE", setting)
 	c.Validation.Required(setting)
 	if c.Validation.HasErrors() {
 		// Sets the flash parameter `error` which will be sent by a flash cookie

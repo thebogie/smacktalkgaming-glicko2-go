@@ -42,12 +42,12 @@ func (c Application) Index() revel.Result {
 	FACEBOOK.ClientSecret, _ = revel.Config.String("appvars.clientsecret")
 	FACEBOOK.RedirectURL, _ = revel.Config.String("appvars.redirecturl")
 
-	//fmt.Println("WEB", testthis)
+	//revel.TRACE.Println("WEB", testthis)
 
 	u := c.Connected()
 	me := map[string]interface{}{}
 
-	//fmt.Println("U:", u.AccessToken)
+	revel.TRACE.Println("U:", url.QueryEscape(u.AccessToken))
 
 	if u != nil && u.AccessToken != "" {
 
@@ -79,7 +79,7 @@ func (c Application) Auth(code string) revel.Result {
 		revel.ERROR.Println(err)
 		return c.Redirect(Application.Index)
 	}
-	fmt.Println("TOKEN", tok)
+	revel.TRACE.Println("TOKEN", tok)
 	user := c.Connected()
 	user.AccessToken = tok.AccessToken
 
@@ -88,11 +88,11 @@ func (c Application) Auth(code string) revel.Result {
 
 func (c Application) Logout() revel.Result {
 
-	fmt.Println("SESSION", c.Session.Cookie().Raw)
+	revel.TRACE.Println("SESSION", c.Session.Cookie().Raw)
 	for k := range c.Session {
 		delete(c.Session, k)
 	}
-	fmt.Println("SESSION AFTER", c.Session.Cookie().Raw)
+	revel.TRACE.Println("SESSION AFTER", c.Session.Cookie().Raw)
 	return c.Redirect(Application.Index)
 
 }
@@ -102,12 +102,12 @@ func setuser(c *revel.Controller) revel.Result {
 	if _, ok := c.Session["uid"]; ok {
 		uid, _ := strconv.ParseInt(c.Session["uid"], 10, 0)
 		user = models.GetUser(int(uid))
-		fmt.Println("-----------------------USER EXIST", user)
+		revel.TRACE.Println("-----------------------USER EXIST", user)
 	}
 	if user == nil {
 		user = models.NewUser()
 		c.Session["uid"] = fmt.Sprintf("%d", user.Uid)
-		fmt.Println("-----------------------USER NEW", user)
+		revel.TRACE.Println("-----------------------USER NEW", user)
 	}
 	c.RenderArgs["user"] = user
 	return nil

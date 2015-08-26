@@ -6,8 +6,9 @@ import (
 	//"encoding/json"
 	"fmt"
 	"github.com/jmcvetta/neoism"
+	"github.com/revel/revel"
 	"io"
-	"log"
+	//"log"
 	"reflect"
 	//"mitchgottlieb.com/smacktalkgaming/app/models"
 	"errors"
@@ -30,16 +31,16 @@ func newUUID() (string, error) {
 func ConvertToProps(props *neoism.Props, data interface{}) (label string, err error) {
 
 	//what kind of create are we doing?
-	log.Println("TYPDOF", reflect.TypeOf(data))
+	revel.TRACE.Println("TYPDOF", reflect.TypeOf(data))
 	switch data.(type) {
 	case *Game:
 		label = "Game"
-		log.Println("READ GAME!")
+		revel.TRACE.Println("READ GAME!")
 		temp, _ := ToMap(data.(*Game), "")
 		*props = temp
 
 	default:
-		log.Println("FALL THROUGH")
+		revel.TRACE.Println("FALL THROUGH")
 	}
 
 	return label, err
@@ -49,7 +50,7 @@ func ToMap(in interface{}, tag string) (map[string]interface{}, error) {
 	out := make(map[string]interface{})
 
 	v := reflect.ValueOf(in)
-	log.Println("V:", v)
+	revel.TRACE.Println("V:", v)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -63,7 +64,7 @@ func ToMap(in interface{}, tag string) (map[string]interface{}, error) {
 	for i := 0; i < v.NumField(); i++ {
 		// gets us a StructField
 		fi := typ.Field(i)
-		//log.Println("FIELD: + interface", fi, v.Field(i).Interface())
+		//revel.TRACE.Println("FIELD: + interface", fi, v.Field(i).Interface())
 		//if tagv := fi.Tag.Get(tag); tagv != "" {
 		// set key of map to value in struct field
 		//out[tagv] = v.Field(i).Interface()

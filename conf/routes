@@ -12,6 +12,7 @@ GET     	/profile/:uuid	             			Profile.Show
 GET     	/players/list                           Players.List
 POST		/players/createlist                    	Players.CreateList
 GET			/players/status/:player                 Players.Status
+POST		/players/update/                 		Players.Update
 GET			/players/overallstats/:player 			Players.OverallStats
 GET     	/players/auto/:auto               		Players.ListAutoComplete
 GET     	/games/auto/:auto               		Games.ListAutoComplete

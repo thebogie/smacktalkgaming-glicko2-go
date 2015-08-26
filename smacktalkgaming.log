@@ -1,0 +1,156 @@
+INFO  2015/08/26 13:48:30 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\testrunner
+INFO  2015/08/26 13:48:30 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\static
+INFO  2015/08/26 13:48:30 revel.go:206: Initialized Revel v0.12.0 (2015-03-25) for >= go1.3
+INFO  2015/08/26 13:48:30 run.go:57: Running smacktalkgaming (mitchgottlieb.com\smacktalkgaming) in dev mode
+TRACE 2015/08/26 13:48:30 run.go:58: Base path: C:\work\gopath\src/mitchgottlieb.com\smacktalkgaming
+TRACE 2015/08/26 13:48:30 run.go:62: Running in watched mode.
+TRACE 2015/08/26 13:48:30 template.go:193: Refreshing templates from [C:\work\gopath\src/github.com\revel\revel/templates]
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\403.html
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\403.json
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\403.txt
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\403.xml
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\404-dev.html
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\404.html
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\404.json
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\404.txt
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\404.xml
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\405.html
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\405.json
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\405.txt
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\405.xml
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\500-dev.html
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\500.html
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\500.json
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\500.txt
+TRACE 2015/08/26 13:48:30 template.go:278: adding template:  errors\500.xml
+INFO  2015/08/26 13:48:30 harness.go:165: Listening on :9000
+INFO  2015/08/26 13:49:58 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\testrunner
+INFO  2015/08/26 13:49:58 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\static
+INFO  2015/08/26 13:49:58 revel.go:206: Initialized Revel v0.12.0 (2015-03-25) for >= go1.3
+INFO  2015/08/26 13:49:58 run.go:57: Running smacktalkgaming (mitchgottlieb.com\smacktalkgaming) in dev mode
+TRACE 2015/08/26 13:49:58 run.go:58: Base path: C:\work\gopath\src/mitchgottlieb.com\smacktalkgaming
+TRACE 2015/08/26 13:49:58 run.go:62: Running in watched mode.
+TRACE 2015/08/26 13:49:58 template.go:193: Refreshing templates from [C:\work\gopath\src/github.com\revel\revel/templates]
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\403.html
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\403.json
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\403.txt
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\403.xml
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\404-dev.html
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\404.html
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\404.json
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\404.txt
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\404.xml
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\405.html
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\405.json
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\405.txt
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\405.xml
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\500-dev.html
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\500.html
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\500.json
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\500.txt
+TRACE 2015/08/26 13:49:58 template.go:278: adding template:  errors\500.xml
+INFO  2015/08/26 13:49:58 harness.go:165: Listening on :9000
+INFO  2015/08/26 13:50:39 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\testrunner
+INFO  2015/08/26 13:50:39 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\static
+INFO  2015/08/26 13:50:39 revel.go:206: Initialized Revel v0.12.0 (2015-03-25) for >= go1.3
+INFO  2015/08/26 13:50:39 run.go:57: Running smacktalkgaming (mitchgottlieb.com\smacktalkgaming) in dev mode
+TRACE 2015/08/26 13:50:39 run.go:58: Base path: C:\work\gopath\src/mitchgottlieb.com\smacktalkgaming
+TRACE 2015/08/26 13:50:39 run.go:62: Running in watched mode.
+TRACE 2015/08/26 13:50:39 template.go:193: Refreshing templates from [C:\work\gopath\src/github.com\revel\revel/templates]
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\403.html
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\403.json
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\403.txt
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\403.xml
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\404-dev.html
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\404.html
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\404.json
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\404.txt
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\404.xml
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\405.html
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\405.json
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\405.txt
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\405.xml
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\500-dev.html
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\500.html
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\500.json
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\500.txt
+TRACE 2015/08/26 13:50:39 template.go:278: adding template:  errors\500.xml
+INFO  2015/08/26 13:50:39 harness.go:165: Listening on :9000
+INFO  2015/08/26 13:51:49 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\testrunner
+INFO  2015/08/26 13:51:49 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\static
+INFO  2015/08/26 13:51:49 revel.go:206: Initialized Revel v0.12.0 (2015-03-25) for >= go1.3
+INFO  2015/08/26 13:51:49 run.go:57: Running smacktalkgaming (mitchgottlieb.com\smacktalkgaming) in dev mode
+TRACE 2015/08/26 13:51:49 run.go:58: Base path: C:\work\gopath\src/mitchgottlieb.com\smacktalkgaming
+TRACE 2015/08/26 13:51:49 run.go:62: Running in watched mode.
+TRACE 2015/08/26 13:51:49 template.go:193: Refreshing templates from [C:\work\gopath\src/github.com\revel\revel/templates]
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\403.html
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\403.json
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\403.txt
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\403.xml
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\404-dev.html
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\404.html
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\404.json
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\404.txt
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\404.xml
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\405.html
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\405.json
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\405.txt
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\405.xml
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\500-dev.html
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\500.html
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\500.json
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\500.txt
+TRACE 2015/08/26 13:51:49 template.go:278: adding template:  errors\500.xml
+INFO  2015/08/26 13:51:49 harness.go:165: Listening on :9000
+INFO  2015/08/26 13:52:38 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\static
+INFO  2015/08/26 13:52:38 revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\testrunner
+INFO  2015/08/26 13:52:38 revel.go:206: Initialized Revel v0.12.0 (2015-03-25) for >= go1.3
+INFO  2015/08/26 13:52:38 run.go:57: Running smacktalkgaming (mitchgottlieb.com\smacktalkgaming) in dev mode
+TRACE 2015/08/26 13:52:38 run.go:58: Base path: C:\work\gopath\src/mitchgottlieb.com\smacktalkgaming
+TRACE 2015/08/26 13:52:38 run.go:62: Running in watched mode.
+TRACE 2015/08/26 13:52:38 template.go:193: Refreshing templates from [C:\work\gopath\src/github.com\revel\revel/templates]
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\403.html
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\403.json
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\403.txt
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\403.xml
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\404-dev.html
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\404.html
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\404.json
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\404.txt
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\404.xml
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\405.html
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\405.json
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\405.txt
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\405.xml
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\500-dev.html
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\500.html
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\500.json
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\500.txt
+TRACE 2015/08/26 13:52:38 template.go:278: adding template:  errors\500.xml
+INFO  2015/08/26 13:52:38 harness.go:165: Listening on :9000
+INFO  13:55:07 C:/work/gopath/src/github.com/revel/revel/revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\testrunner
+INFO  13:55:07 C:/work/gopath/src/github.com/revel/revel/revel.go:329: Loaded module C:\work\gopath\src\github.com\revel\modules\static
+INFO  13:55:07 C:/work/gopath/src/github.com/revel/revel/revel.go:206: Initialized Revel v0.12.0 (2015-03-25) for >= go1.3
+INFO  13:55:07 C:/work/gopath/src/github.com/revel/cmd/revel/run.go:57: Running smacktalkgaming (mitchgottlieb.com\smacktalkgaming) in dev mode
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/cmd/revel/run.go:58: Base path: C:\work\gopath\src/mitchgottlieb.com\smacktalkgaming
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/cmd/revel/run.go:62: Running in watched mode.
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:193: Refreshing templates from [C:\work\gopath\src/github.com\revel\revel/templates]
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\403.html
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\403.json
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\403.txt
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\403.xml
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\404-dev.html
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\404.html
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\404.json
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\404.txt
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\404.xml
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\405.html
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\405.json
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\405.txt
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\405.xml
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\500-dev.html
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\500.html
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\500.json
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\500.txt
+TRACE 13:55:07 C:/work/gopath/src/github.com/revel/revel/template.go:278: adding template:  errors\500.xml
+INFO  13:55:07 C:/work/gopath/src/github.com/revel/cmd/harness/harness.go:165: Listening on :9000

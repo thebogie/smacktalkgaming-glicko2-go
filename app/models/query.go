@@ -5,11 +5,12 @@ import (
 	"errors"
 	//"fmt"
 	"github.com/jmcvetta/neoism"
-	"log"
+	//"log"
 	"strconv"
 	//"mitchgottlieb.com/smacktalkgaming/app/models"
 	"bytes"
 	"encoding/gob"
+	"github.com/revel/revel"
 	"reflect"
 	"strings"
 )
@@ -19,15 +20,15 @@ type QueryObj struct {
 
 func query(load *neoism.CypherQuery) {
 
-	//log.Println("RELFECT:", reflect.ValueOf(load))
+	//revel.TRACE.Println("RELFECT:", reflect.ValueOf(load))
 
 	neo := new(Neo4jObj)
 	neo.init()
 
-	neo.dbc.Session.Log = true
+	neo.dbc.Session.Log = false
 	neo.dbc.Cypher(load)
 
-	//log.Println("AFTER CYPHER", load.Result)
+	//revel.TRACE.Println("AFTER CYPHER", load.Result)
 
 }
 
@@ -54,7 +55,7 @@ func (qobj *QueryObj) TotalNumberOfGamesPlayed(UUID string) string {
 	query(&cq)
 
 	r := res[0]
-	//log.Println("RELFECT:", reflect.TypeOf(r.Rel_count))
+	//revel.TRACE.Println("RELFECT:", reflect.TypeOf(r.Rel_count))
 	return strconv.Itoa(r.Rel_count)
 
 }
@@ -86,7 +87,7 @@ func (qobj *QueryObj) TotalGamesWon(UUID string) string {
 	query(&cq)
 
 	r := res[0]
-	//log.Println("RELFECT:", reflect.TypeOf(r.Rel_count))
+	//revel.TRACE.Println("RELFECT:", reflect.TypeOf(r.Rel_count))
 	return strconv.Itoa(r.Rel_count)
 
 }
@@ -118,7 +119,7 @@ func (qobj *QueryObj) TotalGamesLost(UUID string) string {
 	query(&cq)
 
 	r := res[0]
-	//log.Println("RELFECT:", reflect.TypeOf(r.Rel_count))
+	//revel.TRACE.Println("RELFECT:", reflect.TypeOf(r.Rel_count))
 	return strconv.Itoa(r.Rel_count)
 
 }
@@ -156,10 +157,10 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 
 	query(&cq)
 
-	log.Println("LOCAL USERS SIZE", len(res))
+	revel.TRACE.Println("LOCAL USERS SIZE", len(res))
 	for _, node := range res {
 
-		//log.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
+		//revel.TRACE.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
 		if len(node.NodeReturned.Data) > 0 {
 			//how do i get the Data struct into a Player stuct to send back
 			//read reflect again....
@@ -172,7 +173,7 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 			//retval = append(retval, node.NodeReturned.Data.(Player))
 
 			for key, v := range node.NodeReturned.Data {
-				//log.Println("key , v ", key, v)
+				//revel.TRACE.Println("key , v ", key, v)
 				if len(v.(string)) > 0 {
 					player.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -213,11 +214,11 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 
 	query(&cq)
 
-	log.Println("LOCAL USERS SIZE", len(res))
+	revel.TRACE.Println("LOCAL USERS SIZE", len(res))
 
 	for _, node := range res {
 
-		//log.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
+		//revel.TRACE.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
 		if len(node.NodeReturned.Data) > 0 {
 			//how do i get the Data struct into a Player stuct to send back
 			//read reflect again....
@@ -229,7 +230,7 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 			//retval = append(retval, node.NodeReturned.Data.(Player))
 
 			for key, v := range node.NodeReturned.Data {
-				//log.Println("key , v ", key, v)
+				//revel.TRACE.Println("key , v ", key, v)
 				if len(v.(string)) > 0 {
 					player.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -249,7 +250,7 @@ func (qobj *QueryObj) MatchPlayersByName(find string, playerUUID string) []Playe
 		}
 
 	}
-	log.Println("END OF PLAYER SEARCH", retval)
+	revel.TRACE.Println("END OF PLAYER SEARCH", retval)
 	return retval
 }
 
@@ -287,7 +288,7 @@ func (qobj *QueryObj) MatchGamesByName(find string, playerUUID string) []Game {
 	query(&cq)
 	for _, node := range res {
 
-		log.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
+		//revel.TRACE.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
 		if len(node.NodeReturned.Data) > 0 {
 			//how do i get the Data struct into a Player stuct to send back
 			//read reflect again....
@@ -296,7 +297,7 @@ func (qobj *QueryObj) MatchGamesByName(find string, playerUUID string) []Game {
 			game := reflect.ValueOf(&gameObj).Elem()
 
 			for key, v := range node.NodeReturned.Data {
-				log.Println("key , v ", key, v)
+				//revel.TRACE.Println("key , v ", key, v)
 				if len(v.(string)) > 0 {
 					game.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -335,11 +336,11 @@ func (qobj *QueryObj) MatchGamesByName(find string, playerUUID string) []Game {
 
 	query(&cq)
 
-	log.Println("LOCAL USERS SIZE", len(res))
+	revel.TRACE.Println("LOCAL USERS SIZE", len(res))
 
 	for _, node := range res {
 
-		//log.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
+		//revel.TRACE.Println("reflect ", reflect.TypeOf(node.NodeReturned.Data))
 		if len(node.NodeReturned.Data) > 0 {
 			//how do i get the Data struct into a Player stuct to send back
 			//read reflect again....
@@ -351,7 +352,7 @@ func (qobj *QueryObj) MatchGamesByName(find string, playerUUID string) []Game {
 			//retval = append(retval, node.NodeReturned.Data.(Player))
 
 			for key, v := range node.NodeReturned.Data {
-				//log.Println("SEARCHBYLETTER: key , v ", key, v)
+				//revel.TRACE.Println("SEARCHBYLETTER: key , v ", key, v)
 				if len(v.(string)) > 0 {
 					game.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -372,7 +373,7 @@ func (qobj *QueryObj) MatchGamesByName(find string, playerUUID string) []Game {
 
 	}
 
-	log.Println("END OF GAME SEARCH", retval)
+	revel.TRACE.Println("END OF GAME SEARCH", retval)
 	return retval
 }
 
@@ -454,7 +455,7 @@ func (qobj *QueryObj) GetOverallStats(uuid string) ([]Event, []Played_In, []Game
 			result := &Event{}
 			err := FillStruct(event.Data, result)
 			if err != nil {
-				log.Panic(err)
+				revel.ERROR.Panic(err)
 			}
 
 			events = append(events, *result)
@@ -465,7 +466,7 @@ func (qobj *QueryObj) GetOverallStats(uuid string) ([]Event, []Played_In, []Game
 			result := &Game{}
 			err := FillStruct(game.Data, result)
 			if err != nil {
-				log.Panic(err)
+				revel.ERROR.Panic(err)
 			}
 
 			games = append(games, *result)
@@ -476,7 +477,7 @@ func (qobj *QueryObj) GetOverallStats(uuid string) ([]Event, []Played_In, []Game
 			result := &Played_In{}
 			err := FillStruct(playedin.Data.(map[string]interface{}), result)
 			if err != nil {
-				log.Panic(err)
+				revel.ERROR.Panic(err)
 			}
 
 			playedins = append(playedins, *result)
@@ -517,7 +518,7 @@ func (qobj *QueryObj) GetPlayer(uuid string) Player {
 			player := reflect.ValueOf(&playerObj).Elem()
 
 			for key, v := range node.NodeReturned.Data {
-				log.Println("key , v ", key, v)
+				revel.TRACE.Println("key , v ", key, v)
 				if len(v.(string)) > 0 {
 					player.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -532,6 +533,9 @@ func (qobj *QueryObj) GetPlayer(uuid string) Player {
 	return retval
 }
 
+/****************************************************************/
+
+/***************************************************************/
 func (qobj *QueryObj) GetEvent(uuid string) Event {
 
 	res := []Event{}
@@ -555,8 +559,8 @@ func (qobj *QueryObj) GetEvent(uuid string) Event {
 	query(&cq)
 
 	for _, node := range res {
-		log.Println(res)
-		log.Println(node)
+		revel.TRACE.Println(res)
+		revel.TRACE.Println(node)
 
 	}
 
@@ -597,7 +601,7 @@ func (qobj *QueryObj) GetValue(nodeType string, UUID string, key string) string 
 
 func (qobj *QueryObj) SetValue(nodeType string, UUID string, key string, value string) error {
 	var prop neoism.Props
-	log.Println("SetValue:", nodeType, UUID, key, value)
+	revel.TRACE.Println("SetValue:", nodeType, UUID, key, value)
 
 	res := []struct {
 		// `json:` tags matches column names in query
@@ -661,19 +665,19 @@ func (qobj *QueryObj) GetAllPlayers() []Player {
 	}
 
 	//test := res[0].Firstname
-	////log.Println("RELFECT:", reflect.TypeOf(test))
-	//log.Println("RELFECT:", test)
+	////revel.TRACE.Println("RELFECT:", reflect.TypeOf(test))
+	//revel.TRACE.Println("RELFECT:", test)
 
 	/*keys := make([]string, 10)
 	for k := range test {
-		log.Println("KEYMAYE:", k)
+		revel.TRACE.Println("KEYMAYE:", k)
 		keys = append(keys, k)
 	}
 
 	//fmt.Printf("%+v\n", test)
-	log.Println("RELFECT:", keys)
+	revel.TRACE.Println("RELFECT:", keys)
 	*/
-	//log.Println("RELFECT:", res[5])
+	//revel.TRACE.Println("RELFECT:", res[5])
 	return retval
 
 }
@@ -699,7 +703,7 @@ func (qobj *QueryObj) GetAllGames() []Game {
 	query(&cq)
 
 	for _, node := range res {
-		log.Println("res", node)
+		revel.TRACE.Println("res", node)
 		//retval = append(retval, Event{Location: node.Location, Surname: node.Surname, UUID: node.UUID})
 	}
 
@@ -727,7 +731,7 @@ func (qobj *QueryObj) GetAllEventLocations() (retval []string) {
 	query(&cq)
 
 	for _, node := range res {
-		log.Println("res", node)
+		revel.TRACE.Println("res", node)
 
 		var found = false
 		//for _, item := range retval {
@@ -782,7 +786,7 @@ func (qobj *QueryObj) GetAllEvents() []Event {
 	query(&cq)
 
 	for _, node := range res {
-		log.Println("res", node)
+		revel.TRACE.Println("res", node)
 		//retval = append(retval, Event{Location: node.Location, Surname: node.Surname, UUID: node.UUID})
 	}
 
@@ -818,7 +822,7 @@ func (qobj *QueryObj) OverallGameRecord(UUID string) map[string]map[string]int {
 
 	retval := make(map[string]map[string]int)
 	for _, v := range res {
-		log.Println("R:", v.Result, v.Game)
+		revel.TRACE.Println("R:", v.Result, v.Game)
 
 		if _, ok := retval[v.Game]; !ok {
 			retval[v.Game] = make(map[string]int)
@@ -834,13 +838,13 @@ func (qobj *QueryObj) OverallGameRecord(UUID string) map[string]map[string]int {
 			retval[v.Game][v.Result]++
 
 		}
-		log.Println("RETVAL", retval)
+		revel.TRACE.Println("RETVAL", retval)
 
 	}
 
 	for k, v := range retval {
-		log.Println("RETVAL V", v)
-		log.Println("RETVAL K", k)
+		revel.TRACE.Println("RETVAL V", v)
+		revel.TRACE.Println("RETVAL K", k)
 	}
 
 	return retval

@@ -16,7 +16,7 @@ package models
 import (
 	"github.com/jmcvetta/neoism"
 	"github.com/revel/revel"
-	"log"
+	//"log"
 	"strings"
 
 	//"reflect"
@@ -35,7 +35,7 @@ type Neo4jObj struct {
 }
 
 func (neo *Neo4jObj) init() {
-	log.Println("NEO4j INIT")
+	revel.TRACE.Println("NEO4j INIT")
 
 	if neo.dbc == nil {
 
@@ -45,7 +45,7 @@ func (neo *Neo4jObj) init() {
 		neo.dbc = dbconnect
 
 		if err != nil {
-			log.Panicln("Database not connecting", err)
+			revel.TRACE.Panicln("Database not connecting", err)
 		}
 
 	}
@@ -54,13 +54,13 @@ func (neo *Neo4jObj) init() {
 
 /* A -> B relationship */
 func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Relate) (UUID string) {
-	log.Println("NEO4j CREATE RELATE")
+	revel.TRACE.Println("NEO4j CREATE RELATE")
 	neo.init()
 
 	relateProps := relate.Create()
 	bundleProps := neoism.Props{"relateProps": relateProps, "UUIDnodeA": UUIDnodeA, "UUIDnodeB": UUIDnodeB}
 
-	log.Println("relateProps = ", relateProps)
+	revel.TRACE.Println("relateProps = ", relateProps)
 
 	var statementStr string
 
@@ -98,10 +98,10 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 			CREATE (a)-[r:INCLUDED {relateProps}]->(b) RETURN r
 		`
 	default:
-		log.Println("NODE TYPE", t)
+		revel.TRACE.Println("NODE TYPE", t)
 	}
 
-	log.Println("bndleprops:", bundleProps)
+	revel.TRACE.Println("bndleprops:", bundleProps)
 
 	res1 := []struct {
 		Node neoism.Relationship `json:"relationship"`
@@ -115,36 +115,36 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 	neo.dbc.Session.Log = false
 	neo.dbc.Cypher(&cq)
 
-	log.Println("RES: ", res1)
+	revel.TRACE.Println("RES: ", res1)
 
 	return UUID
 }
 
 func (neo *Neo4jObj) ReadRelate(relate Relate) (UUID string) {
-	log.Println("NEO4j READ RELATE")
+	revel.TRACE.Println("NEO4j READ RELATE")
 	neo.init()
 	return UUID
 }
 
 func (neo *Neo4jObj) Create(node Node) (UUID string) {
-	log.Println("NEO4j CREATE")
+	revel.TRACE.Println("NEO4j CREATE")
 	neo.init()
 
 	var newNode *neoism.Node
 
 	//doesnt exist?
 	cargo := neo.Read(node)
-	log.Println("CARGO:", cargo.Data)
-	log.Println("CARGO:", len(cargo.Data))
+	revel.TRACE.Println("CARGO:", cargo.Data)
+	revel.TRACE.Println("CARGO:", len(cargo.Data))
 
 	if len(cargo.Data) == 0 {
 		var err error
 		newProps := node.Create()
-		log.Println("NewProps:", newProps)
+		revel.TRACE.Println("NewProps:", newProps)
 
 		newNode, err = neo.dbc.CreateNode(newProps)
 		if err != nil {
-			log.Fatal(err)
+			revel.ERROR.Fatal(err)
 		}
 
 		var label string
@@ -162,7 +162,7 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 		case *Location:
 			label = "Location"
 		default:
-			log.Println("NODE TYPE", t)
+			revel.TRACE.Println("NODE TYPE", t)
 		}
 
 		newNode.AddLabel(label)
@@ -183,12 +183,12 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 		if len(cargo.Data) == 0 {
 			gamename, _ = newNode.Property("Name")
 
-			log.Println("gamename")
+			revel.TRACE.Println("gamename")
 			//If game node connect the gamesifter
 			//create or find the GameCatalog node. This node's only purpose is to split the games
 			//up into alphabet and other for quicker searching.
 			UUIDGamesifter := neo.Create(&Gamesifter{Name: "Gamesifter"})
-			log.Println("gamsifter", UUIDGamesifter)
+			revel.TRACE.Println("gamsifter", UUIDGamesifter)
 
 			capletter := []byte(gamename)
 			startswithletter := "STARTS_WITH_" + strings.ToUpper(string(capletter[0]))
@@ -202,7 +202,7 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 
 //read from UUID... find other ways to find objects later
 func (neo *Neo4jObj) Read(node Node) neoism.Node {
-	log.Println("NEO4j READ")
+	revel.TRACE.Println("NEO4j READ")
 	neo.init()
 
 	statementStr := node.Read()

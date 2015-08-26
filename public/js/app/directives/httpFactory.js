@@ -36,6 +36,16 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 				return result.data;
 			});
      } ,
+	   	updatePlayer: function(updateplayercargo) {
+			console.log("updateplayercargo:" + (updateplayercargo));
+
+			return $http({method: 'POST', 
+					url: '/players/update',  
+					data:$filter('json')(updateplayercargo) 
+					}).then(function(data, status, headers, config) {
+					 return data;
+			}); 
+	 },
 	   	getPlayer: function(item) {
 			//alert(item);
 			return $http.get(URLplayerstatus.replace("<nil>", item)).then(function(result) {
@@ -48,15 +58,7 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 				return result.data;
 			});
 	 },
-		httpstartEvent: function(eventcargo) {
-			console.log("eventcargo:" + JSON.stringify(eventcargo));
-			return $http({method: 'POST', 
-					url: '/events/start',  
-					data:$filter('json')(eventcargo) 
-					}).then(function(data, status, headers, config) {
-					 return data;
-			});
-	   } ,
+		
 		httpcommitEvent: function(eventcargo) {
 				
 			return $http({method: 'POST', 
@@ -65,6 +67,13 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 					}).then(function(data, status, headers, config) {
 					 return data;
 			});
-	   } 
+	   },
+	   	httpTimeZoneOffset: function(mapstring) {
+			//alert(item);
+			return $http.get(mapstring).then(function(result) {
+				console.log("fromfactoryresult:", result.data);
+				return parseInt(result.data.dstOffset + result.data.rawOffset) / 60;
+			});
+	   }
 	}
 }]);

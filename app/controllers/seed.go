@@ -7,7 +7,7 @@ import (
 	//"github.com/jmcvetta/neoism"
 	"github.com/revel/revel"
 	"io/ioutil"
-	"log"
+	//"log"
 	"mitchgottlieb.com/smacktalkgaming/app/models"
 	//"reflect"
 	//"fmt"
@@ -56,7 +56,7 @@ func check(e error) {
 }
 
 func (c Seed) Index(kind string) revel.Result {
-	log.Println("SEED", kind)
+	revel.TRACE.Println("SEED", kind)
 
 	devmode, _ := revel.Config.String("mode.dev")
 
@@ -102,19 +102,19 @@ func (c Seed) Index(kind string) revel.Result {
 			//get XML from api2
 			getboardgamegeekGames := "http://www.boardgamegeek.com/xmlapi2/search?type=boardgame,boardgameextension&query="
 
-			log.Println("SEED: Searching BGG for Game:", value)
+			revel.TRACE.Println("SEED: Searching BGG for Game:", value)
 			res, err := http.Get(getboardgamegeekGames + value)
-			log.Println("SEED: MEssage from  BGG for Game:", res, err)
+			revel.TRACE.Println("SEED: MEssage from  BGG for Game:", res, err)
 			if err == nil {
 
 				decoded := xml.NewDecoder(res.Body)
 
 				err := decoded.Decode(result)
 				if err != nil {
-					log.Fatal(err)
+					revel.ERROR.Fatal(err)
 				}
 				//http://boardgamegeek.com/boardgame/ID
-				log.Println("HERE:", result)
+				revel.TRACE.Println("HERE:", result)
 				for _, value := range result.Items {
 
 					var game models.Game
@@ -124,7 +124,7 @@ func (c Seed) Index(kind string) revel.Result {
 					game.BGGLink = "http://boardgamegeek.com/boardgame/" + value.ID
 
 					UUIDnodeGame := neo.Create(&game)
-					log.Println("game added:", UUIDnodeGame)
+					revel.TRACE.Println("game added:", UUIDnodeGame)
 				}
 			}
 		}
@@ -163,7 +163,7 @@ func (c Seed) Index(kind string) revel.Result {
 				if err != nil {
 					panic(err)
 				}
-				log.Println("Random Name", string(jsonDataFromHttp))
+				revel.TRACE.Println("Random Name", string(jsonDataFromHttp))
 
 				err = json.Unmarshal([]byte(jsonDataFromHttp), &randomname) // here!
 
@@ -171,7 +171,7 @@ func (c Seed) Index(kind string) revel.Result {
 					panic(err)
 				}
 
-				log.Println("Random Name after", randomname)
+				revel.TRACE.Println("Random Name after", randomname)
 
 				var player models.Player
 
@@ -185,10 +185,10 @@ func (c Seed) Index(kind string) revel.Result {
 				player.Surname = string(capLast)
 				player.Nickname = randomname.Results[0].User.Username
 
-				log.Println("player", player)
+				revel.TRACE.Println("player", player)
 
 				UUIDnodePlayer := neo.Create(&player)
-				log.Println("player", UUIDnodePlayer)
+				revel.TRACE.Println("player", UUIDnodePlayer)
 
 			}
 			sum += i
@@ -2748,8 +2748,8 @@ func seedaction(neo *models.Neo4jObj,
 		fixtime, _ := time.Parse("200601021504 -0700", evt.Stop+" -0500")
 		evt.Stop = fixtime.Format(time.RFC3339)
 	}
-	log.Println("EVT START", evt.Start)
-	log.Println("EVT STOP", evt.Stop)
+	revel.TRACE.Println("EVT START", evt.Start)
+	revel.TRACE.Println("EVT STOP", evt.Stop)
 
 	UUIDEvt := neo.Create(evt)
 
@@ -2773,7 +2773,7 @@ func seedaction(neo *models.Neo4jObj,
 
 func (c Seed) checkUser() revel.Result {
 
-	log.Println("CHECKING IF FACEBOOKED IN AND ADMIN!!!!")
+	revel.TRACE.Println("CHECKING IF FACEBOOKED IN AND ADMIN!!!!")
 	user := c.Connected()
 	if user == nil || len(user.AccessToken) == 0 {
 		c.Flash.Error("Please log in first")

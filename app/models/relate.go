@@ -4,7 +4,8 @@ package models
 import (
 	//"fmt"
 	"github.com/jmcvetta/neoism"
-	"log"
+	//"log"
+	"github.com/revel/revel"
 	"reflect"
 )
 
@@ -39,7 +40,7 @@ type Included struct {
 /******** PLAYED IN *************/
 func (r *Played_In) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(r))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(r))
 	r.UUID = getUUID()
 	return neoism.Props{
 		"Result": r.Result,
@@ -51,8 +52,8 @@ func (r *Played_In) Create() neoism.Props {
 
 func (r *Played_In) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(r))
-	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
+	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
 	return "asdf"
 	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
 
@@ -61,7 +62,7 @@ func (r *Played_In) Read() string {
 /******** PLAYED WITH *************/
 func (r *Played_With) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(r))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(r))
 	r.UUID = getUUID()
 	return neoism.Props{
 		"UUID": r.UUID,
@@ -71,8 +72,8 @@ func (r *Played_With) Create() neoism.Props {
 
 func (r *Played_With) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(r))
-	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
+	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
 	return "asdf"
 	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
 
@@ -81,7 +82,7 @@ func (r *Played_With) Read() string {
 /******** STARTS WITH *************/
 func (r *Starts_With) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(r))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(r))
 	r.UUID = getUUID()
 	return neoism.Props{
 		"UUID":       r.UUID,
@@ -92,8 +93,8 @@ func (r *Starts_With) Create() neoism.Props {
 
 func (r *Starts_With) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(r))
-	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
+	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
 	return "asdf"
 	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
 
@@ -102,7 +103,7 @@ func (r *Starts_With) Read() string {
 /******** PLAYED AT *************/
 func (r *Played_At) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(r))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(r))
 	r.UUID = getUUID()
 	return neoism.Props{
 		"UUID": r.UUID,
@@ -112,8 +113,8 @@ func (r *Played_At) Create() neoism.Props {
 
 func (r *Played_At) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(r))
-	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
+	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
 	return "asdf"
 	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
 
@@ -122,7 +123,7 @@ func (r *Played_At) Read() string {
 /******** INCULDED *************/
 func (r *Included) Create() neoism.Props {
 
-	log.Println("Creating  ", reflect.TypeOf(r))
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(r))
 	r.UUID = getUUID()
 	return neoism.Props{
 		"UUID": r.UUID,
@@ -132,8 +133,8 @@ func (r *Included) Create() neoism.Props {
 
 func (r *Included) Read() string {
 
-	log.Println("Reading  ", reflect.TypeOf(r))
-	//log.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
+	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
 	return "asdf"
 	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
 

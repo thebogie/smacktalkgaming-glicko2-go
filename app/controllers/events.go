@@ -57,7 +57,7 @@ import (
 	//"mitchgottlieb.com/smacktalkgaming/app/routes"
 	"strconv"
 	"strings"
-	"time"
+	//"time"
 )
 
 type Events struct {
@@ -77,7 +77,7 @@ type EventCargoCommit struct {
 }
 
 //TODO combine above stucts to one EVentCargo
-type EventCargoJSON struct {
+type EventLoad struct {
 	Event     models.Event       `json:event`
 	Players   []models.Player    `json:players`
 	Games     []models.Game      `json:games`
@@ -123,13 +123,13 @@ func recordStartOfEvent(
 
 func (c Events) Commit() revel.Result {
 
-	fmt.Println("COMMIT EVENT POST REQUEST")
+	revel.INFO.Println("COMMIT EVENT POST REQUEST")
 
-	cargo := EventCargoCommit{}
-	fmt.Println("Body", c.Request.Body)
-	fmt.Println("params", c.Params)
+	cargo := EventLoad{}
+	revel.TRACE.Println("Body", c.Request.Body)
+	revel.TRACE.Println("params", c.Params)
 
-	fmt.Println("cargo:", cargo)
+	revel.TRACE.Println("cargo:", cargo)
 
 	retEventStatus := make(map[string]string)
 	retEventStatus["status"] = "PASS"
@@ -138,22 +138,37 @@ func (c Events) Commit() revel.Result {
 	if err != nil {
 		//panic(err)
 	}
-	fmt.Println("cargocommit:", cargo)
+	revel.INFO.Println("cargoload:", cargo)
 
+	//TODO: check if user has done a game at the same time? might be playing two games at once....
+	// better to have a system to prove the game happened at time X with results Y
 	neo := new(models.Neo4jObj)
 
-	for index := range cargo.Players {
-		UUIDnodePlayer := neo.Create(&cargo.Players[index])
+	UUIDEvt := neo.Create(&cargo.Event)
 
-		if len(cargo.Playedin) > 0 {
-			neo.CreateRelate(UUIDnodePlayer, cargo.Eventuuid, &cargo.Playedin[index])
-		}
-
-		//TODO turn off player's currentevent flag
-
+	var UUIDnodeLoc string
+	for index := range cargo.Locations {
+		UUIDnodeLoc = neo.Create(&cargo.Locations[index])
+		neo.CreateRelate(UUIDEvt, UUIDnodeLoc, &models.Played_At{})
 	}
-	query := new(models.QueryObj)
-	query.SetValue("Event", cargo.Eventuuid, "Stop", time.Now().Format(time.RFC3339))
+
+	var UUIDnodeGame string
+	for index := range cargo.Games {
+		UUIDnodeGame = neo.Create(&cargo.Games[index])
+		neo.CreateRelate(UUIDEvt, UUIDnodeGame, &models.Played_With{})
+	}
+
+	var UUIDnodePlayer string
+	for index := range cargo.Players {
+		UUIDnodePlayer = neo.Create(&cargo.Players[index])
+
+		//the resluts might not be ready for a templated event
+		//if len(playedin) > 0 {
+		//	neo.CreateRelate(UUIDnodePlayer, UUIDEvt, playedin[index])
+		//}
+		neo.CreateRelate(UUIDEvt, UUIDnodePlayer, &models.Included{})
+		neo.CreateRelate(UUIDnodePlayer, UUIDEvt, &cargo.Playedin[index])
+	}
 
 	return c.RenderJson(retEventStatus)
 }
@@ -162,17 +177,17 @@ func (c Events) Start() revel.Result {
 
 	//var retval []byte
 
-	fmt.Println("START EVENT POST REQUEST")
+	revel.TRACE.Println("START EVENT POST REQUEST")
 
 	cargo := EventCargo{}
-	fmt.Println("Body", c.Request.Body)
-	fmt.Println("params", c.Params)
+	revel.TRACE.Println("Body", c.Request.Body)
+	revel.TRACE.Println("params", c.Params)
 
 	err := json.NewDecoder(c.Request.Body).Decode(&cargo)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("cargo:", cargo)
+	revel.TRACE.Println("cargo:", cargo)
 
 	retPlayerStatus := make(map[string]string)
 	retPlayerStatus["status"] = "PASS"
@@ -183,9 +198,9 @@ func (c Events) Start() revel.Result {
 		// check if player is in an event already.. if so return list of users that are in an event
 		fmt.Printf("key=%v, value=%v", k, v)
 		answer := query.GetPlayerCurrentEvent(v.UUID)
-		fmt.Println("ret getplayercurrentevent", answer)
+		revel.TRACE.Println("ret getplayercurrentevent", answer)
 		if answer != "" {
-			fmt.Println("user:", v.Firstname, " ", v.Surname, " is in an event")
+			revel.TRACE.Println("user:", v.Firstname, " ", v.Surname, " is in an event")
 			retPlayerStatus["status"] = "FAIL: players already in events"
 			retPlayerStatus[v.UUID] = answer
 			//query.SetValues(v)
@@ -216,7 +231,7 @@ func (c Events) Start() revel.Result {
 }
 
 func (c Events) Status(event string) revel.Result {
-	fmt.Println("STRING", event)
+	revel.TRACE.Println("STRING", event)
 
 	evtret := new(models.QueryObj).GetEvent(event)
 
@@ -231,7 +246,7 @@ func (c Events) Create() revel.Result {
 	//games := (new(models.QueryObj)).GetAllGames()
 	//locations := (new(models.QueryObj)).GetAllEventLocations()
 
-	//fmt.Println("locations", locations[2])
+	//revel.TRACE.Println("locations", locations[2])
 
 	//return c.Render(players, games, locations)
 	return c.Render("")
