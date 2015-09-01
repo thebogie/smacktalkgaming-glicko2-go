@@ -3,10 +3,11 @@ URLplayerslistautocomplete = typeof(URLplayerslistautocomplete) == 'undefined' ?
 URLgameslistautocomplete = typeof(URLgameslistautocomplete) == 'undefined' ? 0 : URLgameslistautocomplete;
 
 URLeventstatus = typeof(URLeventstatus) == 'undefined' ? 0 : URLeventstatus;
-
+URLlasteventstatus = typeof(URLlasteventstatus) == 'undefined' ? 0 : URLlasteventstatus;
 
 URLplayerstatus = typeof(URLplayerstatus) == 'undefined' ? 0 : URLplayerstatus;
 URLplayeroverallstats = typeof(URLplayeroverallstats) == 'undefined' ? 0 : URLplayeroverallstats;
+URLplayerlastlocation = typeof(URLplayerlastlocation) == 'undefined' ? 0 : URLplayerlastlocation;
 
 
 //
@@ -45,6 +46,12 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 					}).then(function(data, status, headers, config) {
 					 return data;
 			}); 
+	 },
+	   	getLastLocation: function(item) {
+			console.log(item);
+			return $http.get(URLplayerlastlocation.replace("<nil>", item)).then(function(result) {
+				return result.data;
+			});
 	 },
 	   	getPlayer: function(item) {
 			//alert(item);

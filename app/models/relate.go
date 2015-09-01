@@ -37,6 +37,10 @@ type Included struct {
 	UUID string
 }
 
+type Last_Event struct {
+	UUID string
+}
+
 /******** PLAYED IN *************/
 func (r *Played_In) Create() neoism.Props {
 
@@ -132,6 +136,26 @@ func (r *Included) Create() neoism.Props {
 }
 
 func (r *Included) Read() string {
+
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
+	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	return "asdf"
+	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
+
+}
+
+/******** LAST EVENT *************/
+func (r *Last_Event) Create() neoism.Props {
+
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(r))
+	r.UUID = getUUID()
+	return neoism.Props{
+		"UUID": r.UUID,
+	}
+
+}
+
+func (r *Last_Event) Read() string {
 
 	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
 	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)

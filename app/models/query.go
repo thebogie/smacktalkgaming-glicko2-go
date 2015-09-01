@@ -534,6 +534,41 @@ func (qobj *QueryObj) GetPlayer(uuid string) Player {
 }
 
 /****************************************************************/
+func (qobj *QueryObj) GetLastEvent(uuid string) Event {
+
+	//find lastevent through player
+	res := []Event{}
+
+	prop := neoism.Props{"UUID": uuid}
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			MATCH (m:Player { UUID:{UUID} })-[r:LAST_EVENT]->(n)
+			return 	n.Eventname as Eventname, 
+					n.Numplayers as Numplayers,
+					n.Start     as Start,
+					n.Stop as Stop,
+					n.UUID as UUID
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	/* for _, node := range res {
+		revel.TRACE.Println(res)
+		revel.TRACE.Println(node)
+
+	} */
+
+	if len(res) < 1 {
+		return Event{}
+	}
+
+	return res[0]
+
+}
 
 /***************************************************************/
 func (qobj *QueryObj) GetEvent(uuid string) Event {
@@ -558,11 +593,13 @@ func (qobj *QueryObj) GetEvent(uuid string) Event {
 
 	query(&cq)
 
-	for _, node := range res {
-		revel.TRACE.Println(res)
-		revel.TRACE.Println(node)
+	/*
+		for _, node := range res {
+			revel.TRACE.Println(res)
+			revel.TRACE.Println(node)
 
-	}
+		}
+	*/
 
 	if len(res) < 1 {
 		return Event{}
@@ -708,6 +745,32 @@ func (qobj *QueryObj) GetAllGames() []Game {
 	}
 
 	return res
+
+}
+
+func (qobj *QueryObj) GetLocation(evt Event) string {
+
+	res := []Location{}
+
+	prop := neoism.Props{"UUID": evt.UUID}
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			
+			MATCH (n:Event { UUID:{UUID} })-[r:PLAYED_AT]->(m)
+			return 	m.Locationname as Locationname
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	if len(res) < 1 {
+		return "Failed to find last location"
+	}
+	//revel.TRACE.Println("res", res[0])
+	return res[0].Locationname
 
 }
 

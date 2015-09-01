@@ -57,66 +57,83 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 	revel.TRACE.Println("NEO4j CREATE RELATE")
 	neo.init()
 
+	statements := []string{}
+
 	relateProps := relate.Create()
 	bundleProps := neoism.Props{"relateProps": relateProps, "UUIDnodeA": UUIDnodeA, "UUIDnodeB": UUIDnodeB}
 
 	revel.TRACE.Println("relateProps = ", relateProps)
 
-	var statementStr string
+	//var statementStr string
 
 	switch t := relate.(type) {
 
 	case *Starts_With:
-		statementStr = `
+		statements = append(statements, `
 			match a, b where a.UUID ={UUIDnodeA}
 			AND b.UUID = {UUIDnodeB} 
-			CREATE (a)-[r:` + relateProps["Relatename"].(string) + ` {relateProps}]->(b) RETURN r
-		`
+			DELETE (a)-[r:LAST_EVENT]
+			CREATE (a)-[r:`+relateProps["Relatename"].(string)+` {relateProps}]->(b) RETURN r
+		`)
 
 	case *Played_At:
-		statementStr = `
+		statements = append(statements, `
 			match a, b where a.UUID ={UUIDnodeA} 
 			AND b.UUID = {UUIDnodeB} 
 			CREATE (a)-[r:PLAYED_AT {relateProps}]->(b) RETURN r
-		`
+		`)
 	case *Played_In:
-		statementStr = `
+		statements = append(statements, `
 			match a, b where a.UUID ={UUIDnodeA} 
 			AND b.UUID = {UUIDnodeB} 
 			CREATE (a)-[r:PLAYED_IN {relateProps}]->(b) RETURN r
-		`
+		`)
 	case *Played_With:
-		statementStr = `
+		statements = append(statements, `
 			match a, b where a.UUID ={UUIDnodeA} 
 			AND b.UUID = {UUIDnodeB} 
 			CREATE (a)-[r:PLAYED_WITH {relateProps}]->(b) RETURN r
-		`
+		`)
 	case *Included:
-		statementStr = `
+		statements = append(statements, `
 			match a, b where a.UUID ={UUIDnodeA} 
 			AND b.UUID = {UUIDnodeB} 
 			CREATE (a)-[r:INCLUDED {relateProps}]->(b) RETURN r
-		`
+		`)
+	case *Last_Event:
+		statements = append(statements, `
+			match (a:Player {UUID:{UUIDnodeA}})-[r:LAST_EVENT]->() DELETE r
+		`)
+		statements = append(statements, `
+			match a, b where a.UUID ={UUIDnodeA} 
+			AND b.UUID = {UUIDnodeB} 
+			CREATE (a)-[r:LAST_EVENT {relateProps}]->(b) RETURN r
+		`)
+
 	default:
 		revel.TRACE.Println("NODE TYPE", t)
 	}
 
 	revel.TRACE.Println("bndleprops:", bundleProps)
 
-	res1 := []struct {
-		Node neoism.Relationship `json:"relationship"`
-	}{}
+	for _, statement := range statements {
 
-	cq := neoism.CypherQuery{
-		Statement:  statementStr,
-		Parameters: bundleProps,
-		Result:     &res1,
+		res1 := []struct {
+			Node neoism.Relationship `json:"relationship"`
+		}{}
+
+		//revel.TRACE.Println("Runing statement:", statement)
+
+		cq := neoism.CypherQuery{
+			Statement:  statement,
+			Parameters: bundleProps,
+			Result:     &res1,
+		}
+		neo.dbc.Session.Log = false
+		neo.dbc.Cypher(&cq)
+
+		revel.TRACE.Println("RES: ", res1)
 	}
-	neo.dbc.Session.Log = false
-	neo.dbc.Cypher(&cq)
-
-	revel.TRACE.Println("RES: ", res1)
-
 	return UUID
 }
 

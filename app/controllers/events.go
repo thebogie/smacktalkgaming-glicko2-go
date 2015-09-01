@@ -85,42 +85,6 @@ type EventLoad struct {
 	Playedin  []models.Played_In `json:playedin`
 }
 
-func recordStartOfEvent(
-	evt models.Event,
-	players []models.Player,
-	games []models.Game,
-	locations []models.Location) string {
-
-	neo := new(models.Neo4jObj)
-
-	UUIDEvt := neo.Create(&evt)
-
-	var UUIDnodeLoc string
-	for index := range locations {
-		UUIDnodeLoc = neo.Create(&locations[index])
-		neo.CreateRelate(UUIDEvt, UUIDnodeLoc, &models.Played_At{})
-	}
-
-	var UUIDnodeGame string
-	for index := range games {
-		UUIDnodeGame = neo.Create(&games[index])
-		neo.CreateRelate(UUIDEvt, UUIDnodeGame, &models.Played_With{})
-	}
-
-	var UUIDnodePlayer string
-	for index := range players {
-		UUIDnodePlayer = neo.Create(&players[index])
-
-		//the resluts might not be ready for a templated event
-		//if len(playedin) > 0 {
-		//	neo.CreateRelate(UUIDnodePlayer, UUIDEvt, playedin[index])
-		//}
-		neo.CreateRelate(UUIDEvt, UUIDnodePlayer, &models.Included{})
-	}
-
-	return UUIDEvt
-}
-
 func (c Events) Commit() revel.Result {
 
 	revel.INFO.Println("COMMIT EVENT POST REQUEST")
@@ -168,10 +132,63 @@ func (c Events) Commit() revel.Result {
 		//}
 		neo.CreateRelate(UUIDEvt, UUIDnodePlayer, &models.Included{})
 		neo.CreateRelate(UUIDnodePlayer, UUIDEvt, &cargo.Playedin[index])
+		neo.CreateRelate(UUIDnodePlayer, UUIDEvt, &models.Last_Event{})
 	}
 
 	return c.RenderJson(retEventStatus)
 }
+
+func (c Events) Status(event string) revel.Result {
+	revel.TRACE.Println("STRING", event)
+
+	evtret := new(models.QueryObj).GetEvent(event)
+
+	return c.RenderJson(evtret)
+}
+
+func (c Events) LastStatus(playeruuid string) revel.Result {
+	revel.TRACE.Println("STRING", playeruuid)
+
+	evtret := new(models.QueryObj).GetLastEvent(playeruuid)
+
+	return c.RenderJson(evtret)
+}
+
+func (c Events) Create() revel.Result {
+	//qobj := new(models.QueryObj)
+	//players := (new(models.QueryObj)).GetAllPlayers()
+
+	//players := (new(models.QueryObj)).MatchPlayersByName("Mi")
+	//games := (new(models.QueryObj)).GetAllGames()
+	//locations := (new(models.QueryObj)).GetAllEventLocations()
+
+	//revel.TRACE.Println("locations", locations[2])
+	playerUUID := c.Session["playerUUID"]
+	//return c.Render(players, games, locations)
+	return c.Render(playerUUID)
+}
+
+func (c Events) List() revel.Result {
+	qobj := new(models.QueryObj)
+	events := qobj.GetAllEvents()
+	/*
+		results, err := c.Txn.Select(models.Booking{},
+			`select * from Booking where UserId = ?`, c.connected().UserId)
+		if err != nil {
+			panic(err)
+		}
+
+		var bookings []*models.Booking
+		for _, r := range results {
+			b := r.(*models.Booking)
+			bookings = append(bookings, b)
+		}
+	*/
+
+	return c.Render(events)
+}
+
+/***** NOT USED *************/
 
 func (c Events) Start() revel.Result {
 
@@ -230,44 +247,38 @@ func (c Events) Start() revel.Result {
 	return c.RenderJson(retPlayerStatus)
 }
 
-func (c Events) Status(event string) revel.Result {
-	revel.TRACE.Println("STRING", event)
+func recordStartOfEvent(
+	evt models.Event,
+	players []models.Player,
+	games []models.Game,
+	locations []models.Location) string {
 
-	evtret := new(models.QueryObj).GetEvent(event)
+	neo := new(models.Neo4jObj)
 
-	return c.RenderJson(evtret)
-}
+	UUIDEvt := neo.Create(&evt)
 
-func (c Events) Create() revel.Result {
-	//qobj := new(models.QueryObj)
-	//players := (new(models.QueryObj)).GetAllPlayers()
+	var UUIDnodeLoc string
+	for index := range locations {
+		UUIDnodeLoc = neo.Create(&locations[index])
+		neo.CreateRelate(UUIDEvt, UUIDnodeLoc, &models.Played_At{})
+	}
 
-	//players := (new(models.QueryObj)).MatchPlayersByName("Mi")
-	//games := (new(models.QueryObj)).GetAllGames()
-	//locations := (new(models.QueryObj)).GetAllEventLocations()
+	var UUIDnodeGame string
+	for index := range games {
+		UUIDnodeGame = neo.Create(&games[index])
+		neo.CreateRelate(UUIDEvt, UUIDnodeGame, &models.Played_With{})
+	}
 
-	//revel.TRACE.Println("locations", locations[2])
+	var UUIDnodePlayer string
+	for index := range players {
+		UUIDnodePlayer = neo.Create(&players[index])
 
-	//return c.Render(players, games, locations)
-	return c.Render("")
-}
+		//the resluts might not be ready for a templated event
+		//if len(playedin) > 0 {
+		//	neo.CreateRelate(UUIDnodePlayer, UUIDEvt, playedin[index])
+		//}
+		neo.CreateRelate(UUIDEvt, UUIDnodePlayer, &models.Included{})
+	}
 
-func (c Events) List() revel.Result {
-	qobj := new(models.QueryObj)
-	events := qobj.GetAllEvents()
-	/*
-		results, err := c.Txn.Select(models.Booking{},
-			`select * from Booking where UserId = ?`, c.connected().UserId)
-		if err != nil {
-			panic(err)
-		}
-
-		var bookings []*models.Booking
-		for _, r := range results {
-			b := r.(*models.Booking)
-			bookings = append(bookings, b)
-		}
-	*/
-
-	return c.Render(events)
+	return UUIDEvt
 }

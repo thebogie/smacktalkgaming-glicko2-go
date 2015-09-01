@@ -128,3 +128,14 @@ func (c Players) ListAutoComplete(auto string) revel.Result {
 
 	return c.RenderJson(players)
 }
+
+func (c Players) GetLastLocation(playeruuid string) revel.Result {
+	revel.TRACE.Println("STRING", playeruuid)
+
+	evtret := new(models.QueryObj).GetLastEvent(playeruuid)
+	revel.TRACE.Println("evtret", evtret)
+
+	locret := new(models.QueryObj).GetLocation(evtret)
+
+	return c.RenderJson(locret)
+}

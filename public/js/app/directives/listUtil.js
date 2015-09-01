@@ -1,7 +1,9 @@
 app.directive('googleplace' , ['listUtil' , '$http',  function(listUtil, $http) {
-    return {
+	return {
         require: 'ngModel',
         link: function(scope, element, attrs, model) {
+			
+			
             var options = {
                 types: []
             };
@@ -10,7 +12,7 @@ app.directive('googleplace' , ['listUtil' , '$http',  function(listUtil, $http) 
             google.maps.event.addListener(scope.gPlace, 'place_changed', function() {
                 scope.$apply(function() {
 					var place = scope.gPlace.getPlace();
-					console.log("PLACE", place);
+					
 					var listObj = {
 						Locationname: element.val(),
 						Locationlng: place.geometry.location.lng().toString(),
@@ -20,7 +22,7 @@ app.directive('googleplace' , ['listUtil' , '$http',  function(listUtil, $http) 
 
 					
 					listUtil.addList(listObj, "locationList" );
-					console.log("WORK?" + JSON.stringify(listUtil.getList("locationList")  ) ) ;
+					//console.log("WORK?" + JSON.stringify(listUtil.getList("locationList")  ) ) ;
                     model.$setViewValue(element.val()); 
 					
                 });
