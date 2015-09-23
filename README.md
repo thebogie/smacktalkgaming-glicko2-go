@@ -1,1 +1,1 @@
-Using Revel and golang to create a board game database using HTML5
+Using Golang/Revel, Neo4j, Angular (Material Design) and Docker to create a board game database.
