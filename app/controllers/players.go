@@ -139,3 +139,15 @@ func (c Players) GetLastLocation(playeruuid string) revel.Result {
 
 	return c.RenderJson(locret)
 }
+
+func CheckAdmin(playeruuid string) bool {
+	retval := false
+	player := new(models.QueryObj).GetPlayer(playeruuid)
+	revel.TRACE.Println("checkadmin", player)
+
+	if player.Admin == "true" {
+		retval = true
+	}
+	return retval
+
+}

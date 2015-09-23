@@ -32,6 +32,10 @@ app.directive('googleplace' , ['event' , '$http',  function(event, $http) {
 app.factory('event', function () {
     var userName = "John Doe";
 
+	var possibleresults = [ "DEMOLISH", "WON" , "TIE", "LOST", "SKUNK", "DROP", "QUIT", "RAGE QUIT" ];
+	var possibleplaces = [ "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20" ];
+	
+	
     // Shared Models
 	var locationList = [1];
 	var playerList = [];
@@ -42,6 +46,17 @@ app.factory('event', function () {
 	
 	
     return {
+		
+		
+		
+        getPossibleResults: function () {
+             return possibleresults;                   
+        },
+		
+        getPossiblePlaces: function () {
+             return possibleplaces;                   
+        },
+		
         getUserName: function () {
              return userName;                   
         },
@@ -177,6 +192,21 @@ app.factory('event', function () {
 			    console.log("Sorry, we are out of " + expr + ".");
 			}   
 			
+		},
+		
+		setStartDate: function (startdate) {
+
+			//TODO: validate form
+			startDateTime = startdate;
+			console.log("SETSTARTDATE: " , startdate);
+					
+		},
+		setStopDate: function (stopdate) {
+			//TODO: validate form
+			stopDateTime = stopdate;
+
+			console.log("SETSTOPDATE: " , stopdate);
+					
 		},
 		
 		convertDate: function (state, datecargo) {

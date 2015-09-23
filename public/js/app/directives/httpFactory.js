@@ -9,6 +9,9 @@ URLplayerstatus = typeof(URLplayerstatus) == 'undefined' ? 0 : URLplayerstatus;
 URLplayeroverallstats = typeof(URLplayeroverallstats) == 'undefined' ? 0 : URLplayeroverallstats;
 URLplayerlastlocation = typeof(URLplayerlastlocation) == 'undefined' ? 0 : URLplayerlastlocation;
 
+URLgamesadd = typeof(URLgamesadd) == 'undefined' ? 0 : URLgamesadd;
+
+URLstats = typeof(URLstats) == 'undefined' ? 0 : URLstats;
 
 //
 //var ;
@@ -27,6 +30,14 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
            return result.data;
        	});
      } , 
+		addGame: function(game) {
+			console.log("game", game);
+			console.log("URLgameadd", URLgamesadd.replace("<nil>", game));
+			return $http.get(URLgamesadd.replace("<nil>", game)).then(function(result) {
+				return result.data;
+			});
+     } ,
+	 
 	 	getGamesAutoComplete: function(item) {
        return $http.get(URLgameslistautocomplete.replace("<nil>", item)).then(function(gameresult) {
            return gameresult.data;
@@ -65,9 +76,15 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 				return result.data;
 			});
 	 },
+		httpGrabStats: function(cargo) {
+			console.log("GrabStatsCargo:", cargo, URLstats);
+			return $http.get(URLstats.replace("<nil>/<nil>", cargo)).then(function(result) {
+				return result.data;
+			});
+	   },
 		
 		httpcommitEvent: function(eventcargo) {
-				
+			console.log("EVENTCARGO:", eventcargo);
 			return $http({method: 'POST', 
 					url: '/events/commit',  
 					data:$filter('json')(eventcargo) 
@@ -79,7 +96,8 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 			//alert(item);
 			return $http.get(mapstring).then(function(result) {
 				console.log("fromfactoryresult:", result.data);
-				return parseInt(result.data.dstOffset + result.data.rawOffset) / 60;
+				return result.data.timeZoneId;
+				//return parseInt(result.data.dstOffset + result.data.rawOffset) / 60;
 			});
 	   }
 	}

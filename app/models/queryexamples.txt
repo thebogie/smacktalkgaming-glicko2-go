@@ -28,3 +28,9 @@ CREATE (a)-[r:PLAYED_IN {UUID:'5534c48d-4ed8-4eac-8003-1b427dc59702' , Result:'L
 MATCH (n)-[r:PLAYED_IN {Result:"WON"}]-(m) return n, r, m
 
 MATCH (n)-[r:PLAYED_IN {Result:"LOSE"}]-(m) return r
+
+MATCH (g {Name:'Gamesifter'}), (g:Game {Name:'Five Tribes'})
+CREATE (g)-[:STARTS_WITH_F]->(r)
+
+**** set admin *****
+MATCH (p:Player {Firstname:"Mitch"}) SET p.Admin="true" return p

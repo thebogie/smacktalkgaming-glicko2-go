@@ -17,12 +17,17 @@ GET			/players/overallstats/:player 			Players.OverallStats
 GET     	/players/auto/:auto               		Players.ListAutoComplete
 GET     	/players/lastlocation/:playeruuid       Players.GetLastLocation
 GET     	/games/auto/:auto               		Games.ListAutoComplete
-GET     	/events/list                           	Events.List
+
+GET			/games/start							Games.Start
+GET			/games/add/:search						Games.Add
+
+GET     	/events/list/:playeruuid                Events.List
 GET     	/events/create                          Events.Create
 POST     	/events/start                          	Events.Start
 POST     	/events/commit                          Events.Commit
 GET     	/events/status/:event                   Events.Status
 GET     	/events/laststatus/:playeruuid          Events.LastStatus
+GET			/stats/grab/:playeruuid/:action			Stats.Grab
 GET			/seed/:kind								Seed.Index
 #GET     /hotels/:id/booking                     Hotels.Book
 #POST    /hotels/:id/booking                     Hotels.ConfirmBooking

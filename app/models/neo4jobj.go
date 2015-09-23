@@ -18,7 +18,6 @@ import (
 	"github.com/revel/revel"
 	//"log"
 	"strings"
-
 	//"reflect"
 )
 
@@ -35,7 +34,7 @@ type Neo4jObj struct {
 }
 
 func (neo *Neo4jObj) init() {
-	revel.TRACE.Println("NEO4j INIT")
+	//revel.TRACE.Println("NEO4j INIT")
 
 	if neo.dbc == nil {
 
@@ -72,7 +71,6 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 		statements = append(statements, `
 			match a, b where a.UUID ={UUIDnodeA}
 			AND b.UUID = {UUIDnodeB} 
-			DELETE (a)-[r:LAST_EVENT]
 			CREATE (a)-[r:`+relateProps["Relatename"].(string)+` {relateProps}]->(b) RETURN r
 		`)
 
@@ -151,8 +149,6 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 
 	//doesnt exist?
 	cargo := neo.Read(node)
-	revel.TRACE.Println("CARGO:", cargo.Data)
-	revel.TRACE.Println("CARGO:", len(cargo.Data))
 
 	if len(cargo.Data) == 0 {
 		var err error
@@ -200,14 +196,14 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 		if len(cargo.Data) == 0 {
 			gamename, _ = newNode.Property("Name")
 
-			revel.TRACE.Println("gamename")
 			//If game node connect the gamesifter
 			//create or find the GameCatalog node. This node's only purpose is to split the games
 			//up into alphabet and other for quicker searching.
 			UUIDGamesifter := neo.Create(&Gamesifter{Name: "Gamesifter"})
-			revel.TRACE.Println("gamsifter", UUIDGamesifter)
+			revel.TRACE.Println("-------gamesifter", UUIDGamesifter)
 
 			capletter := []byte(gamename)
+			revel.TRACE.Println("gamename + cap", gamename, string(capletter[0]))
 			startswithletter := "STARTS_WITH_" + strings.ToUpper(string(capletter[0]))
 			neo.CreateRelate(UUIDGamesifter, UUID, &Starts_With{Relatename: startswithletter})
 		}

@@ -5,6 +5,7 @@ import (
 	"github.com/revel/revel"
 	//"log"
 	"mitchgottlieb.com/smacktalkgaming/app/models"
+	//"unsafe"
 )
 
 type Profile struct {
@@ -41,6 +42,15 @@ func getOverall(playerUUID string) map[string]map[string]int {
 }
 
 func (c Profile) Show(uuid string) revel.Result {
+
+	type profilecargo struct {
+		Event       models.Event
+		Games       []models.Game
+		Location    string
+		Result      models.Played_In
+		Competitors []models.Competitor
+	}
+
 	permission := make(map[string]string)
 	permission["readonly"] = "false"
 	if uuid != c.Session["playerUUID"] {
@@ -49,12 +59,31 @@ func (c Profile) Show(uuid string) revel.Result {
 
 	playerinfo := new(models.QueryObj).GetPlayer(uuid)
 
-	events, playedins, games := new(models.QueryObj).GetOverallStats(uuid)
+	eventList := new(models.QueryObj).GetEventsByPlayer(uuid)
+	eventcargo := []profilecargo{}
+
+	for _, event := range eventList {
+		pc := profilecargo{}
+
+		pc.Event = event
+		pc.Games = new(models.QueryObj).GetGamesByEvent(event.UUID)
+		pc.Location = new(models.QueryObj).GetLocation(event)
+		pc.Competitors = new(models.QueryObj).GetCompetitorsByEvent(event.UUID)
+
+		//revel.TRACE.Println("adding PC", pc)
+
+		if pc.Games != nil {
+			eventcargo = append(eventcargo, pc)
+		}
+
+	}
+
+	_, playedins, games := new(models.QueryObj).GetOverallStats(uuid)
 	//retval2 := getOverall(uuid)
 
-	revel.TRACE.Println("playerinfo: ", playerinfo, events)
-
-	return c.Render(playerinfo, events, playedins, games, permission)
+	revel.TRACE.Println("eventcargo: ", eventcargo)
+	//events, playedins, games,
+	return c.Render(playerinfo, permission, eventcargo, games, playedins)
 }
 
 func (c Profile) Index() revel.Result {

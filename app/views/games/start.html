@@ -1,23 +1,76 @@
 [[template "header.html" .]]
+	<script> 
+		var app = angular.module( 'smacktalk-gamesmanagement' ,  [ 'md.data.table', 'ngMessages', 'ngMaterial' , 'LocalStorageModule'] );
+		
+		var URLgamesadd = [[url "Games.Add"]];
 
-    <script src="/public/js/vendor/lodash.js"></script>
-    <script src="/public/js/games/app.js"></script>
+	</script>
 
-  <body >
-    <div data-ng-app="plunker" data-ng-controller="MainCtrl">
-    <form>
-      <div>
-        <label>title</label>
-        <input type="text" data-ng-model="item.title" list="comicstitle">
-      </div>
-      <div>
-        <input type="Button" value="Add" data-ng-click="addItem(item)">
-      </div>
-    </form>
+	<script type="text/javascript" src="/public/js/app/directives/httpFactory.js"></script>
+</head>
+<body data-ng-app="smacktalk-gamesmanagement">
 
-  <datalist id="comicstitle">
-    <option  data-ng-repeat="ttl in titles" value="{{ttl}}"> 
-  </datalist>
-  
-   </div>
+<div layout="column" ng-controller="GamesCtrl">
+	<md-content layout="row">
+		<md-input-container>
+		  <label>Add game by name</label>
+		  <input ng-model="game">
+		</md-input-container>
+		 <md-button class="md-raised" ng-click="onClick()">Add</md-button>
+	</md-content>
+	
+
+	<md-content ng-show="showaddresults">
+	<label>Added to database:</label>
+		<md-content  ng-repeat="addedgame in result.Addedgames" >
+			<a href="{{addedgame.BGGLink}}">{{addedgame.Name}} ({{addedgame.Published}})</a>
+		</md-content>
+	</md-content>
+	
+	<md-content ng-show="showupdateresults">
+		<label>Already present and/or updated:</label>
+		<md-content ng-repeat="updatedgame in result.Updatedgames">
+			<a href="{{updatedgame.BGGLink}}">{{updatedgame.Name}} ({{updatedgame.Published}})</a>
+		</md-content>
+	</md-content>
+	
+</div>
+
+
+
+<script>
+
+app.controller( 'GamesCtrl' ,  ['$scope', 'myHttpFactory'   , function( $scope  , myHttpFactory ) {
+
+	$scope.result="";
+	$scope.showaddresults=false;
+	$scope.showupdateresults=false;
+
+	$scope.onClick = function () {
+		console.log("games click", $scope.game);
+		
+		return myHttpFactory.addGame($scope.game).then(function(data) {
+			$scope.result = data;
+			
+			if (data.Addedgames != null) {
+				$scope.showaddresults=true;
+			} else {
+				$scope.showaddresults=false;
+			}
+			if (data.Updatedgames != null) {
+				$scope.showupdateresults=true;
+			} else {
+				$scope.showupdateresults=false;
+			
+			}
+			console.log("data",data);
+			return data;
+
+		});	
+
+	};
+
+}]);
+
+</script>
 [[template "footer.html" .]]

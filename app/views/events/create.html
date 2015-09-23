@@ -310,12 +310,12 @@ app.controller( 'EventCtrl' ,  ['$scope', 'myHttpFactory' , 'event' , '$window' 
 		//TODO: check each part that the basics passed
 		$scope.showPassedChecks = true;
 		
-		printStart = new Date(event.getEvent().Start);
-		printEnd = new Date(event.getEvent().Stop)
+		//console.log("getEvent:", event.getEvent().Start);
+		//console.log("moment:", moment(event.getEvent().Start));
 		
 		$scope.showevent = {
-			"start": printStart.toLocaleDateString() + " " + printStart.toLocaleTimeString(), 
-			"end": printEnd.toLocaleDateString() + " " + printEnd.toLocaleTimeString(), 
+			"start": event.getEvent().Start, 
+			"end":event.getEvent().Stop, 
 		};
 		
 		$scope.showgames = event.getList("gameList");
@@ -382,8 +382,8 @@ app.controller( 'GameCtrl' , ['$scope', 'myHttpFactory' , 'event' , function( $s
 
 app.controller( 'PlayerCtrl' , ['$scope', 'myHttpFactory', 'event',  function(   $scope  , myHttpFactory, event ) {
 	
-	$scope.possibleresults = [ "DEMOLISH", "WON" , "TIE", "LOST", "SKUNK", "DROP", "QUIT", "RAGE QUIT" ];
-	$scope.possibleplaces = [ "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20" ];
+	$scope.possibleresults = event.getPossibleResults();
+	$scope.possibleplaces = event.getPossiblePlaces();
 	
 	$scope.updatePlace = function(uuid, place) {
 		event.setPlayerPlace(uuid, place.toString());
@@ -458,6 +458,9 @@ app.controller( 'LocationDateTimeCtrl' , ['$scope', 'event', 'myHttpFactory', fu
 
 	$scope.startDateTime = 0;
 	$scope.stopDateTime = 0;
+	
+	$scope.lockedStartDate = 0;
+	$scope.lockedStopDate = 0;
 
 	startButtonText = "Click to lock event start";
 	$scope.startButton = startButtonText;
@@ -517,33 +520,44 @@ app.controller( 'LocationDateTimeCtrl' , ['$scope', 'event', 'myHttpFactory', fu
 	$scope.lockStartTime = function( start) {
 		console.log("start button clicked", start);
 		
-		//convert start.X to Date
-		console.log("CONVERTED:", event.convertDate("start", start));
-		userview = new Date(event.convertDate("start", start));
-		$scope.startButton = userview.toTimeString().substring(0,5) + " " + userview.toDateString();
+		
+		$scope.lockedStartDate = moment.tz(start.year + "-" + start.month + "-" + start.day + " " + start.hour + ":" + start.minute + " ", "YYYY-MM-DD HH:mm", start.offset);
+		
+		$scope.lockedStopDate = $scope.lockedStartDate.clone();
+		$scope.lockedStopDate.add(1, 'hour');
+
+		//console.log("MOMENT:" , $scope.lockedStartDate);
+		//console.log("MOMENT STRING:" , $scope.lockedStartDate.format());
+		
+		//console.log("MOMENT STOP:" , $scope.lockedStopDate);
+		//console.log("MOMENT STOP STRING:" , $scope.lockedStopDate.format());
+	
+		$scope.startButton = $scope.lockedStartDate.format("YYYY-MM-DD HH:mm");
 		$scope.classState= "md-raised";
 		
 		//TODO: make stop time AVG TIME OF GAME 
 		// for now just add an hour
-		$scope.stop.hour = $scope.start.hour;
-		$scope.stop.minute = $scope.start.minute;
-		$scope.stop.year = $scope.start.year;
-		$scope.stop.month =$scope.start.month;
-		$scope.stop.day = $scope.start.day;
+		$scope.stop.hour = $scope.hours[$scope.lockedStopDate.hour()];
+		$scope.stop.minute = $scope.minutes[(Math.floor(($scope.lockedStopDate.minute())/5))];
+		$scope.stop.year =$scope.lockedStopDate.year();
+		$scope.stop.month = $scope.months[$scope.lockedStopDate.month()];
+		$scope.stop.day = $scope.lockedStopDate.date();
 		
+		event.setStartDate($scope.lockedStartDate.format());
+
 		
 	
 	};
 	$scope.lockStopTime = function( stop) {
 		console.log("stop button clicked", stop);
 		
-		//convert start.X to Date
+		$scope.lockedStopDate = moment.tz(stop.year + "-" + stop.month + "-" + stop.day + " " + stop.hour + ":" + stop.minute + " ", "YYYY-MM-DD HH:mm", $scope.start.offset);
 		
-		userview = new Date(event.convertDate("stop", stop));
-		$scope.stopButton = userview.toTimeString().substring(0,5) + " " + userview.toDateString();
+		$scope.stopButton = $scope.lockedStopDate.format("YYYY-MM-DD HH:mm");;
 		$scope.stopclassState= "md-raised";
 		
-		
+		event.setStopDate($scope.lockedStopDate.format());
+			
 		$scope.$emit("RecordStage");
 		
 		$scope.stopclassState= "";
@@ -567,7 +581,7 @@ app.controller( 'LocationDateTimeCtrl' , ['$scope', 'event', 'myHttpFactory', fu
 	$scope.onClick = function () {
 		currentloc = event.getList("locationList");	
 		console.log("CUrrentLoc: ", currentloc);
-		$scope.startDateTime = Date.now();
+		//$scope.startDateTime = Date.now();
 		
 		mapsString = "https://maps.googleapis.com/maps/api/timezone/json?location="+currentloc[0].Locationlat+","+currentloc[0].Locationlng+"&timestamp="+$scope.startDateTime/1000+"&sensor=false&key=AIzaSyCXSL3n9tI-VTgRJOhXqJJJ42D1FO1EGBE";
 	
@@ -577,20 +591,34 @@ app.controller( 'LocationDateTimeCtrl' , ['$scope', 'event', 'myHttpFactory', fu
 			currentloc = event.getList("locationList")[0];
 			console.log("BEFORE", currentloc);
 			
+			$scope.startDateTime = moment().tz(result);
+			
 			currentloc.Locationtz = result;
+			console.log("Locationtz", currentloc.Locationtz);
+			
 			event.addList(currentloc, "locationList");
 			
 			currentloc = event.getList("locationList")[0];
 			console.log("AFTER", currentloc);
 			
+			
+			$scope.start.hour = $scope.hours[$scope.startDateTime.hour()];
+			$scope.start.minute = $scope.minutes[(Math.floor(($scope.startDateTime.minute())/5))];
+			$scope.start.year = $scope.startDateTime.year();
+			$scope.start.month = $scope.months[$scope.startDateTime.month()];
+			$scope.start.day = $scope.startDateTime.date();
+			
+			$scope.start.offset = currentloc.Locationtz;
+			
+			/*
 			//show the date time according to locaiton
 			locationTimeInSecs = $scope.startDateTime + currentloc.Locationtz * 60000;
-			console.log("UTCOFFSET IS?", currentloc.Locationtz);
+			//console.log("UTCOFFSET IS?", currentloc.Locationtz);
 			
-			$scope.start.hour = new Date(locationTimeInSecs).getUTCHours();
-			$scope.start.minute = Math.floor((new Date(locationTimeInSecs).getUTCMinutes())/5)*5;;
+			$scope.start.hour = $scope.hours[new Date(locationTimeInSecs).getUTCHours()];
+			$scope.start.minute = $scope.minutes[(Math.floor((new Date(locationTimeInSecs).getUTCMinutes())/5))];
 			$scope.start.year = new Date(locationTimeInSecs).getUTCFullYear();
-			$scope.start.month = new Date(locationTimeInSecs).getUTCMonth() + 1;
+			$scope.start.month = $scope.months[new Date(locationTimeInSecs).getUTCMonth()];
 			$scope.start.day = new Date(locationTimeInSecs).getUTCDate();
 			//in minutes
 			
@@ -598,6 +626,8 @@ app.controller( 'LocationDateTimeCtrl' , ['$scope', 'event', 'myHttpFactory', fu
 			$scope.start.offset = currentloc.Locationtz / 60;
 			$scope.stop.offset = $scope.start.offset;
 			//$scope.start.offset = -4.5;
+			
+			*/
 			$scope.hideDateTime = false;
 		});
 

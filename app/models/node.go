@@ -57,6 +57,17 @@ type Game struct {
 	BGGLink   string `json:"BGGLink`
 }
 
+type Competitor struct {
+	Player Player
+	Result Played_In
+}
+
+type ByPlace []Competitor
+
+func (a ByPlace) Len() int           { return len(a) }
+func (a ByPlace) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByPlace) Less(i, j int) bool { return a[i].Result.Place < a[j].Result.Place }
+
 type Player struct {
 	Firstname    string `json:"Firstname"`
 	Surname      string `json:"Surname"`
@@ -65,6 +76,7 @@ type Player struct {
 	UUID         string `json:"UUID"`
 	CurrentEvent string `json:"Currentevent"`
 	Alignment    string `json:"Alignment"`
+	Admin        string `json:"Admin"`
 }
 
 func getUUID() string {
@@ -242,7 +254,8 @@ func (n *Player) Create() neoism.Props {
 		"Surname":   n.Surname,
 		"Birthdate": n.Birthdate,
 		"Nickname":  n.Nickname,
-		"UUID":      n.UUID}
+		"UUID":      n.UUID,
+		"Admin":     n.Admin}
 
 }
 

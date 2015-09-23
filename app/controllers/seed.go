@@ -11,7 +11,7 @@ import (
 	"mitchgottlieb.com/smacktalkgaming/app/models"
 	//"reflect"
 	//"fmt"
-	"encoding/xml"
+	//"encoding/xml"
 	"net/http"
 	"regexp"
 	"time"
@@ -66,68 +66,6 @@ func (c Seed) Index(kind string) revel.Result {
 	neo := new(models.Neo4jObj)
 
 	if kind == "games" {
-
-		type NameXML struct {
-			XMLName xml.Name `xml:"name"`
-			Value   string   `xml:"value,attr"`
-		}
-		type YearpublishedXML struct {
-			XMLName xml.Name `xml:"yearpublished"`
-			Value   string   `xml:"value,attr"`
-		}
-
-		type Item struct {
-			XMLName       xml.Name         `xml:"item"`
-			ID            string           `xml:"id,attr"`
-			Name          NameXML          `xml:"name"`
-			Yearpublished YearpublishedXML `xml:"yearpublished"`
-		}
-
-		type bggXML struct {
-			Total   string   `xml:"total,attr"`
-			XMLName xml.Name `xml:"items"`
-			Items   []Item   `xml:"item"`
-		}
-
-		//TODO: how to get all the games? Run through alphabet?
-		//search := []string{"Dune", "Payday", "London+Cabbie+Game", "King", "San+Juan", "Takenoko", "Kingdom", "Tokaido", "FRAG",
-		//	"Castle+Keep", "Netrunner", "Sleeping+Queen", "Carcassonne", "Mr.+Jack+Pocket", "Lost+Cities", "Forbidden+Island",
-		//	"Tonga+Island", "Caesar", "Hot", "Tsuro", "Small+World", "The+Builders",
-		//	"Council", "Dungeoneer", "Survive:", "Bohnanza"}
-		search := []string{"Puerto+Rico"}
-
-		for _, value := range search {
-
-			result := new(bggXML)
-			//get XML from api2
-			getboardgamegeekGames := "http://www.boardgamegeek.com/xmlapi2/search?type=boardgame,boardgameextension&query="
-
-			revel.TRACE.Println("SEED: Searching BGG for Game:", value)
-			res, err := http.Get(getboardgamegeekGames + value)
-			revel.TRACE.Println("SEED: MEssage from  BGG for Game:", res, err)
-			if err == nil {
-
-				decoded := xml.NewDecoder(res.Body)
-
-				err := decoded.Decode(result)
-				if err != nil {
-					revel.ERROR.Fatal(err)
-				}
-				//http://boardgamegeek.com/boardgame/ID
-				revel.TRACE.Println("HERE:", result)
-				for _, value := range result.Items {
-
-					var game models.Game
-
-					game.Name = value.Name.Value
-					game.Published = value.Yearpublished.Value
-					game.BGGLink = "http://boardgamegeek.com/boardgame/" + value.ID
-
-					UUIDnodeGame := neo.Create(&game)
-					revel.TRACE.Println("game added:", UUIDnodeGame)
-				}
-			}
-		}
 	}
 
 	if kind == "players" {

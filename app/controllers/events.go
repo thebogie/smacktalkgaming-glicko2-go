@@ -168,24 +168,9 @@ func (c Events) Create() revel.Result {
 	return c.Render(playerUUID)
 }
 
-func (c Events) List() revel.Result {
-	qobj := new(models.QueryObj)
-	events := qobj.GetAllEvents()
-	/*
-		results, err := c.Txn.Select(models.Booking{},
-			`select * from Booking where UserId = ?`, c.connected().UserId)
-		if err != nil {
-			panic(err)
-		}
+func (c Events) List(playeruuid string) revel.Result {
 
-		var bookings []*models.Booking
-		for _, r := range results {
-			b := r.(*models.Booking)
-			bookings = append(bookings, b)
-		}
-	*/
-
-	return c.Render(events)
+	return c.RenderJson(new(models.QueryObj).GetEventsByPlayer(playeruuid))
 }
 
 /***** NOT USED *************/

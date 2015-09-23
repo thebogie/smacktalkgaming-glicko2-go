@@ -12,6 +12,7 @@ import (
 	"encoding/gob"
 	"github.com/revel/revel"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -518,7 +519,7 @@ func (qobj *QueryObj) GetPlayer(uuid string) Player {
 			player := reflect.ValueOf(&playerObj).Elem()
 
 			for key, v := range node.NodeReturned.Data {
-				revel.TRACE.Println("key , v ", key, v)
+				//revel.TRACE.Println("key , v ", key, v)
 				if len(v.(string)) > 0 {
 					player.Elem().FieldByName(key).SetString(v.(string))
 				}
@@ -805,6 +806,226 @@ func (qobj *QueryObj) GetAllEventLocations() (retval []string) {
 		if !found {
 			retval = append(retval, "")
 		}
+	}
+
+	return retval
+
+}
+
+func (qobj *QueryObj) GetPlayerStatsByEvent(eventUUID string) (retval []Player, results []Played_In) {
+
+	//format of cypher return
+	res := []map[string]map[string]map[string]interface{}{}
+
+	prop := neoism.Props{"UUID": eventUUID}
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			MATCH (p:Event { UUID:{UUID} })-[r:PLAYED_WITH]->(n)
+			return 	n
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	//reflect the struct instead of writing it out eveytime.
+	//assume: all strings
+	for _, v := range res {
+		//revel.TRACE.Println("TYPE", k, reflect.TypeOf(v))
+		for _, u := range v {
+			for s, t := range u {
+				if s == "data" {
+					newevent := Player{}
+					for key, value := range t {
+
+						v := reflect.ValueOf(&newevent).Elem().FieldByName(key)
+						if v.IsValid() {
+							v.SetString(value.(string))
+						}
+
+					}
+					retval = append(retval, newevent)
+				}
+
+			}
+		}
+
+	}
+
+	return retval, results
+
+}
+
+//return competitors in placed order!
+func (qobj *QueryObj) GetCompetitorsByEvent(eventUUID string) (retval []Competitor) {
+
+	//format of cypher return
+	res := []map[string]map[string]map[string]interface{}{}
+	//player := Player{}
+	//playedin := Played_In{}
+
+	prop := neoism.Props{"UUID": eventUUID}
+
+	cq := neoism.CypherQuery{
+		Statement:  `MATCH (e:Event { UUID:{UUID} })-[r:INCLUDED]->(n), (n)-[p:PLAYED_IN]->(e) return n, p`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	//reflect the struct instead of writing it out eveytime.
+	//assume: all strings
+	for _, v := range res {
+		//revel.TRACE.Println("VTYPE", vkey, v, reflect.TypeOf(v))
+		newcompetitor := Competitor{}
+		for ukey, u := range v {
+
+			if ukey == "n" {
+				for wkey, w := range u {
+					if wkey == "data" {
+						newobj := Player{}
+						for key, value := range w {
+
+							element := reflect.ValueOf(&newobj).Elem().FieldByName(key)
+							if element.IsValid() {
+								element.SetString(value.(string))
+							}
+
+						}
+						newcompetitor.Player = newobj
+
+					}
+
+				}
+			}
+
+			if ukey == "p" {
+				for wkey, w := range u {
+					if wkey == "data" {
+						newobj := Played_In{}
+						for key, value := range w {
+
+							element := reflect.ValueOf(&newobj).Elem().FieldByName(key)
+							if element.IsValid() {
+								element.SetString(value.(string))
+							}
+
+						}
+
+						newcompetitor.Result = newobj
+
+					}
+
+				}
+			}
+		}
+
+		retval = append(retval, newcompetitor)
+
+	}
+	sort.Sort(ByPlace(retval))
+	return retval
+
+}
+
+func (qobj *QueryObj) GetGamesByEvent(eventUUID string) (retval []Game) {
+
+	//format of cypher return
+	res := []map[string]map[string]map[string]interface{}{}
+
+	prop := neoism.Props{"UUID": eventUUID}
+
+	//revel.TRACE.Println("prop", prop)
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			MATCH (p:Event { UUID:{UUID} })-[r:PLAYED_WITH]->(n)
+			
+			return n
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	//revel.TRACE.Println("res", res)
+	//reflect the struct instead of writing it out eveytime.
+	//assume: all strings
+	for _, v := range res {
+
+		for _, u := range v {
+			for s, t := range u {
+				if s == "data" {
+					newevent := Game{}
+					for key, value := range t {
+
+						element := reflect.ValueOf(&newevent).Elem().FieldByName(key)
+						if element.IsValid() {
+							element.SetString(value.(string))
+						}
+
+					}
+					//revel.TRACE.Println("gamebyevent", newevent)
+					retval = append(retval, newevent)
+				}
+
+			}
+		}
+
+	}
+
+	if len(retval) == 0 {
+		retval = nil
+	}
+
+	return retval
+
+}
+
+func (qobj *QueryObj) GetEventsByPlayer(playerUUID string) (retval []Event) {
+
+	//format of cypher return
+	res := []map[string]map[string]map[string]interface{}{}
+
+	prop := neoism.Props{"UUID": playerUUID}
+
+	cq := neoism.CypherQuery{
+		Statement: `
+			MATCH (p:Player { UUID:{UUID} })-[r:PLAYED_IN]->(n)
+			return n
+			`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	//reflect the struct instead of writing it out eveytime.
+	//assume: all strings
+	for _, v := range res {
+		//revel.TRACE.Println("TYPE", k, reflect.TypeOf(v))
+		for _, u := range v {
+			for s, t := range u {
+				if s == "data" {
+					newevent := Event{}
+					for key, value := range t {
+
+						element := reflect.ValueOf(&newevent).Elem().FieldByName(key)
+						if element.IsValid() {
+							element.SetString(value.(string))
+						}
+
+					}
+					retval = append(retval, newevent)
+				}
+
+			}
+		}
+
 	}
 
 	return retval

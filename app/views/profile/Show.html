@@ -1,9 +1,12 @@
 [[template "header.html" .]]
+
+
 	<script> 
-		var app = angular.module( 'smacktalk-profile' ,  [ 'ngMessages', 'ngMaterial' , 'LocalStorageModule'] ); 
+		var app = angular.module( 'smacktalk-profile' ,  ['chart.js', 'md.data.table', 'ngMessages', 'ngMaterial' , 'LocalStorageModule'] ); 
 		
 		var URLplayeroverallstats = [[url "Players.OverallStats"]];
 		var URLplayerstatus = [[url "Players.Status"]];
+		var URLstats = [[url "Stats.Grab"]];
 
 		[[if .permission]]
 			var permission = [[.permission]];
@@ -29,21 +32,28 @@
 			console.log("Games", gamesList);
 		[[end]]
 		
+		[[if .eventcargo]]
+			var eventcargo = [[.eventcargo]];
+			console.log("eventcargo", eventcargo);
+			
+			
+		[[end]]
+		
 		
 		app.config( function ( localStorageServiceProvider) {
 			localStorageServiceProvider.setPrefix('playerprofile');		
 		});
-		
-		
-
-		
-		
 
 
 	</script>
-
 	
+	<link rel="stylesheet" href="/public/js/vendor/angular-chart/angular-chart.css">
+
+	<script type="text/javascript" src="/public/js/app/services/stats.js"></script>
+	<script type="text/javascript" src="/public/js/app/directives/event.js"></script>
 	<script type="text/javascript" src="/public/js/app/directives/httpFactory.js"></script>
+	<script type="text/javascript" src="/public/js/vendor/chart/chart.js"></script>
+	<script type="text/javascript" src="/public/js/vendor/angular-chart/angular-chart.js"></script>
 
 	<style>
 	.inputdemoErrors .inputErrorsApp {
@@ -67,7 +77,7 @@
 
 
     <md-tabs md-dynamic-height md-border-bottom md-stretch-tabs="always">
-	    <md-tab label="Character Sheet">
+	    <md-tab label="[[.playerinfo.Firstname]] [[.playerinfo.Surname]] Character Sheet">
         <md-content layout-padding style="background-color: #b4dcb3;" >
 			<div  layout="column"   ng-controller="OverAllStatsCtrl" ng-model="overallstats">
 			<table  border="0"  id="DDtable">
@@ -99,7 +109,7 @@
 						  
 						  <md-input-container>
 							<label>Alignment</label>
-							<md-select style="width:150px" name="alignment" ng-model="project.alignment" placeholder="Alignment">
+							<md-select style="width:170px" name="alignment" ng-model="project.alignment" placeholder="Alignment">
 									<md-option ng-repeat="alignment in alignments" value="{{alignment}}">{{alignment}}</md-option>
 							</md-select>
 						  
@@ -235,15 +245,98 @@
         </md-content>
       </md-tab>
 
-	  <md-tab    label="Events">
-		<div  ng-controller="EventsProfileCtrl" layout="column" ng-submit="update(projectForm);">
+	  <md-tab    label="List of all my Events">
+		<div  ng-controller="EventsProfileCtrl" layout="column" ng-submit="update(projectForm);" ng-model="showevents" >
 		  <md-content  style="background-color: #b4dcb3;"   layout-padding>
+		  
+			<md-data-table-toolbar>
+			  <h2 class="md-title">Events I have played in</h2>
+			</md-data-table-toolbar>
 
+			<md-data-table-container>
+			  <table md-data-table class="md-primary" >
+				<thead md-order="query.order" md-trigger="onOrderChange">
+				  <tr>
+					<th name="Games Played"  order-by="gamesplayed"></th>
+					<th name="Results"  order-by="results"></th>
+					<th name="Event Name"  order-by="Eventname"></th>
+					<th name="Start"  order-by="Start"></th>
+					<th name="End"  order-by="Stop"></th>
+					<th name="Location"  order-by="location"></th>
+
+					
+				  </tr>
+				</thead>
+				<tbody>
+				  <tr md-auto-select 
+				  ng-repeat="event in showevents | orderBy: query.order | limitTo: query.limit: (query.page - 1) * query.limit">
+				  
+					<td>{{event.gamesplayed}}</td>
+					<td>{{event.results}}</td>
+					<td>{{event.Eventname}}</td>
+					<td>{{event.Start}}</td>
+					<td>{{event.Stop}}</td>
+					<td>{{event.location}}</td>
+				  </tr>
+				</tbody>
+			  </table>
+			</md-data-table-container>		  
+			<md-data-table-pagination md-limit="query.limit" md-page="query.page" md-total="{{showevents.length}}" md-trigger="onPaginationChange"></md-data-table-pagination>
+			
 		  </md-content>
 		</div>
       </md-tab>
 	  
-	  
+	  <md-tab label="Interesting Stats">
+        <md-content layout-padding style="background-color: #b4dcb3;" >
+		
+
+
+		<div layout="row" ng-controller="CoolStats" ng-model="stats">
+		  <div flex >
+			  <md-card>
+				  <md-card-content ng-init="NemesisInit()" >
+					<h2 class="md-title">Who are my Nemeses and who am I dominating?</h2>
+					<p>
+					  <b>Nemeses</b>: Top 3 people who have placed higher than you in total events.
+					  <b>Dominating</b>: Top 3 people who have placed lower than you in total events.
+					</p>
+					<div class="md-actions" layout="row" layout-align="end center">
+					<md-button ng-click="showNemeses()">Nemeses</md-button>
+					<md-button ng-click="showDominate()">Dominating</md-button>
+					</div>
+					
+					<canvas ng-show="shownemeses" id="nemesis" class="chart chart-doughnut" 
+							chart-data="stats.nemesis.data"
+							chart-labels="stats.nemesis.labels" 
+							chart-legend="stats.nemesis.legend" >
+					</canvas> 
+					
+					
+					<canvas ng-show="showdominate" id="dominate" class="chart chart-doughnut" 
+							chart-data="stats.dominate.data" 
+							chart-labels="stats.dominate.labels" 
+							chart-legend="stats.dominate.legend">
+					</canvas> 
+					
+				  </md-card-content>
+				  
+				</md-card>
+		  </div>
+		  <div flex>
+			
+		  </div>
+		  <div flex hide-sm>
+			
+		  </div>
+		</div>
+
+
+			
+		
+        </md-content>
+      </md-tab>
+	  <!--
 	  <md-tab label="CS with GRID">
         <md-content layout-padding style="background-color: #b4dcb3;" >
 			<div layout="row" layout-wrap  ng-controller="OverAllStatsCtrl" ng-model="overallstats">
@@ -409,7 +502,7 @@
 			</div>
         </md-content>
       </md-tab>
-	  
+	  !-->
 	  
 	  
 	  
@@ -430,14 +523,12 @@ app.controller('GridTest', ['$scope', function($scope) {
 }]);
 
 
+app.controller( 'OverAllStatsCtrl' , ['$scope', 'stats', function( $scope, stats ) {
 
-
-
-
-
-app.controller( 'OverAllStatsCtrl' , ['$scope', function( $scope ) {
+	stats.setEventcargo(eventcargo);
+	
 	$scope.eventsinfo = {
-		'total': eventsList.length,
+		'total': stats.getNumberEvents(),
 		'title': "EVENTS",
 	};
 	$scope.gamesinfo = {
@@ -445,7 +536,7 @@ app.controller( 'OverAllStatsCtrl' , ['$scope', function( $scope ) {
 		'title': "GAMES",
 	};
 	$scope.playersinfo = {
-		'total': 666,
+		'total': stats.getNumberCompetitors(),
 		'title': "PLAYERS",
 	};
 	
@@ -528,11 +619,54 @@ app.controller( 'OverAllStatsCtrl' , ['$scope', function( $scope ) {
 
 }]);
 
-app.controller('EventsProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHttpFactory) {
+app.controller('EventsProfileCtrl', ['$scope', 'myHttpFactory', 'stats', function($scope, myHttpFactory, stats) {
 
+	events = [];
+	
+	$scope.showevents = stats.getPrettyEventStats();
+	console.log("showevents", $scope.showevents);
+	$scope.selected = [];
 
+	  $scope.query = {
+		filter: '',
+		order: '-Start',
+		limit: 10,
+		page: 1
+	  };
 
+	  
+	  $scope.compare = 		function compare(a,b) {
+			//console.log("HERE",a.Eventname,b.Eventname);
+				if (a.Eventname < b.Eventname)
+					return -1;
+				if (a.Eventname > b.Eventname)
+					return 1;
+				return 0;
+		};
+
+	  // in the future we may see a few built in alternate headers but in the mean time
+	  // you can implement your own search header and do something like
+	  $scope.search = function (predicate) {
+		console.log("search");
+		//$scope.filter = predicate;
+		//$scope.deferred = $nutrition.desserts.get($scope.query, success).$promise;
+	  };
+
+	  $scope.onOrderChange = function (order) {
+
+	    //$scope.showevents = "fish";
+
+		//return $nutrition.desserts.get($scope.query, success).$promise; 
+	  };
+
+	  $scope.onPaginationChange = function (page, limit) {
+		console.log("onPaginationChange", page , limit);
+		//return eventsList;
+	  };
 }]);
+
+
+
 
 app.controller('ProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHttpFactory) {
 
@@ -601,6 +735,196 @@ app.controller('ProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHtt
     };  
 
 }]);
+
+
+app.controller('CoolStats', ['$scope', 'myHttpFactory',  function($scope, myHttpFactory ) {
+
+	var nemesis = "FISH";
+	//NEMESIS
+	
+	$scope.shownemeses = false;
+	$scope.showdominate = false;
+	
+	$scope.stats =  {
+		nemesis: { 
+					labels: [],
+					series: [],
+					data: []
+		},
+		dominate: { 
+			labels: [],
+			series: [],
+			data: [] 
+		}
+	};
+	
+	
+	console.log("CoolStats");
+	
+	FindNemesis($scope.stats);
+	//console.log("nemesis", $scope.stats.nemesis);
+	
+	/*
+	$scope.stats.nemesis.labels = ['nemeses'];
+	$scope.stats.nemesis.series = ['Myron', 'Olivia Builder', 'Jess'];
+	$scope.stats.nemesis.data = [
+								[3],
+										[2],
+												[1],
+	
+									];
+	$scope.stats.dominate.labels = ['dominating'];
+	$scope.stats.dominate.series = ['John', '<a>fred</a>', 'Jess'];
+	$scope.stats.dominate.data = [
+								[-3],
+										[4],
+												[2],
+	
+									];
+
+ */
+
+
+	$scope.showNemeses = function () {
+		$scope.shownemeses = true;
+		$scope.showdominate = false;
+	};
+	$scope.showDominate = function () {
+		$scope.shownemeses = false;
+		$scope.showdominate = true;
+	};
+
+
+}]);
+
+
+
+function FindNemesis(chart) {
+
+	
+
+
+	var rated = [];
+	for (var i = 0; i < eventcargo.length; i++) {
+		
+		var meuuid = 666;
+		var ident = 0;
+		var sortA = [];
+		for (j=0;j<eventcargo[i].Competitors.length;j++) {
+			var playeruuid = eventcargo[i].Competitors[j].Player.UUID;
+			
+			var temprate = {
+					name: eventcargo[i].Competitors[j].Player.Firstname + " " + eventcargo[i].Competitors[j].Player.Surname,
+					uuid: playeruuid,
+					rating: eventcargo[i].Competitors[j].Result.Place,
+					beatthem: 0,
+					beatenbythem: 0
+			};
+
+			sortA.push(temprate);
+			
+			sortA.sort(function(a, b) {
+					if (a.rating < b.rating) {
+						return -1;
+					}
+					if (a.rating > b.rating) {
+						return 1;
+					}
+					return 0;
+			});
+		}
+
+		//console.log("sorted",sortA);
+		// after sorting the places, record wins/loses 
+		// add the other player's stats to return array
+		var foundme = false;
+		
+		
+		
+		
+		//console.log("sortA", sortA);
+		for (k=0;k<sortA.length;k++) {
+		
+			//console.log("rated:", rated, k);
+			if (playerinfo.UUID == sortA[k].uuid ) {
+				foundme = true;
+			} else 
+			{
+				var ratedExist = false;
+				var ratedLoc = 0;
+				for (m=0;m<rated.length;m++) {
+					if (rated[m].uuid == sortA[k].uuid) {
+						ratedExist = true;
+						ratedLoc = m;
+					}
+				}
+				if (!ratedExist) {
+					rated.push(sortA[k]);
+					rated[rated.length-1].beatenbythem++;
+				}  else {
+			
+					if (!foundme) {
+						rated[ratedLoc].beatenbythem++; 
+						
+					} else {
+						rated[ratedLoc].beatthem++; 
+					}
+				}
+			}
+			
+		}
+		
+		
+		
+		
+	}
+
+	//ratedSorted = Object.keys(rated).sort(function(a,b){return rated[a]-rated[b]})
+	//console.log("rated",rated);
+	
+	var top = 3;
+	var bottom = 3;
+	
+	if (rated.length < 6) {
+	//TODO: fix for less then 6. too tired
+	
+	} else {
+	
+	//sort the rated array of objects to top 3 and bottom 3
+		rated.sort(function(a, b) {
+					if (a.beatenbythem < b.beatenbythem) {
+						return 1;
+					}
+					if (a.beatenbythem > b.beatenbythem) {
+						return -1;
+					}
+					return 0;
+			});
+	
+		chart.nemesis.legend = true;
+		chart.nemesis.labels = [rated[0].name, rated[1].name, rated[2].name];
+		chart.nemesis.data = [rated[0].beatenbythem, rated[1].beatenbythem, rated[2].beatenbythem];
+	
+	
+		rated.sort(function(a, b) {
+					if (a.beatthem < b.beatthem) {
+						return 1;
+					}
+					if (a.beatthem > b.beatthem) {
+						return -1;
+					}
+					return 0;
+			});
+	
+		chart.dominate.legend = true;
+		chart.dominate.labels = [rated[0].name, rated[1].name, rated[2].name];
+		chart.dominate.data = [rated[0].beatthem, rated[1].beatthem, rated[2].beatthem];
+	}
+	
+	console.log("chart", chart);
+};
+
+
 </script>
 
 [[template "footer.html" .]]

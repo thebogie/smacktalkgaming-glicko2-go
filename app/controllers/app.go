@@ -35,7 +35,7 @@ var FACEBOOK = &oauth2.Config{
 }
 
 func (c Application) Index() revel.Result {
-
+	admin := false
 	//testthis, _ := revel.Config.StringDefault()
 
 	FACEBOOK.ClientID, _ = revel.Config.String("appvars.clientid")
@@ -64,12 +64,14 @@ func (c Application) Index() revel.Result {
 		me["playerUUID"] = u.PlayerUUID
 		c.Session["playerUUID"] = u.PlayerUUID
 
+		admin = CheckAdmin(u.PlayerUUID)
+
 		revel.INFO.Println("HERE", u.AccessToken)
 		revel.INFO.Println("HERE", u.PlayerUUID)
 		revel.INFO.Println("HERE", u.Uid)
 	}
 	authUrl := FACEBOOK.AuthCodeURL("foo")
-	return c.Render(me, authUrl)
+	return c.Render(me, authUrl, admin)
 }
 
 func (c Application) Auth(code string) revel.Result {
