@@ -1,109 +1,48 @@
 
-[[template "header.html" .]]
-
-[[if .me]]
-
-</head>
-<body data-ng-app="smacktalk-index">
-<script>
-var w = window,
-    d = document,
-    e = d.documentElement,
-    g = d.getElementsByTagName('body')[0],
-    x = w.innerWidth || e.clientWidth || g.clientWidth,
-    y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-	//md-row-height-gt-lg="4:3" md-row-height="1:1"
-//alert(x + ' × ' + y);
-</script>
-
-	<div  ng-controller="GridTest">
-		<md-content class="md-padding">
-			<md-card>
-				<md-card-content>
-				<h3>[[.me.first_name]] [[.me.last_name]]'s <a href="profile/[[.me.playerUUID]]">Profile</a></h3>
-
+<html lang="en">
+    <head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" type="text/css" href="/public/js/vendor/slick/1.5.0/slick.css"/>
+		<link rel="stylesheet" type="text/css" href="/public/js/vendor/slick/1.5.0/slick-theme.css"/>
+	</head>
+	<body>
+	
+	<a href="[[.authUrl]]"><img src="/public/img/application/fb_login.png"/></a>
+	<div>
+		<div class="slider autoplay">
+			<div><img src="/public/img/application/smacktalk-txt-1.png"/></div>
+			<div><img src="/public/img/application/smacktalk-alwayswin.png"/></div>
+			<div><img src="/public/img/application/smacktalk-dumbmove.png"/></div>
+			<div><img src="/public/img/application/smacktalk-schooled.png"/></div>
+		</div>
 		
-			<h3><a href="events/create">Record Event</a></h3>
-		
-			<h3><a href="players/list">List all Players</a></h3>
-				</md-card-content>
-			</md-card>
-<script>		[[if .admin]] </script>
-			<md-card>
-				<md-card-content>
-				Admin tasks
-				<h3><a href="games/start">Games Management</a></h3>
-				</md-card-content>
-			</md-card>
-			
-<script>    [[end]] </script>
-		</md-content>
 	</div>
+
+	<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="/public/js/vendor/slick/1.5.0/slick.js"></script>
+	<script>
+		$(document).ready(function(){
+			$('.autoplay').slick({
+				dots: true,
+		  infinite: true,
+		  slidesToShow: 1,
+		  slidesToScroll: 1,
+		  centerMode: true,
+		  variableWidth: true,
+		  autoplay: true,
+		  autoplaySpeed: 3000,
+			
+			});
+		});
+		
 	
-	
-
-<script>
-
-var app = angular.module( 'smacktalk-index' ,  [ 'ngMessages', 'ngMaterial' , 'LocalStorageModule'] ); 
-app.controller('GridTest', ['$scope', function($scope) {
+	</script>		
 
 
-}]);
-</script>
+	</body>
+</html>
 
-
-
-[[template "footer.html" .]]
-
-[[else]]
-<!-- FRONT PAGE carousel -->
-
-
-
-<link rel="stylesheet" type="text/css" href="/public/js/vendor/slick/1.5.0/slick.css"/>
-<link rel="stylesheet" type="text/css" href="/public/js/vendor/slick/1.5.0/slick-theme.css"/>
-
-<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-<script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-<script type="text/javascript" src="/public/js/vendor/slick/1.5.0/slick.js"></script>
-
-
- <div align="center">
-<div class="slider autoplay">
-    <div><img src="/public/img/application/smacktalk-txt-1.png"/></div>
-	<div><img src="/public/img/application/smacktalk-alwayswin.png"/></div>
-	<div><img src="/public/img/application/smacktalk-dumbmove.png"/></div>
-    <div><img src="/public/img/application/smacktalk-schooled.png"/></div>
-					
-
-</div>
-  <a href="[[.authUrl]]"><img src="/public/img/application/fb_login.png"/></a>
-</div>
-
-
-
-
-
-
-<script>
-$(document).ready(function(){
-	$('.autoplay').slick({
-		dots: true,
-  infinite: true,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  centerMode: true,
-  variableWidth: true,
-  autoplay: true,
-  autoplaySpeed: 3000,
-	
-	});
-});
-</script>
-
-
-
-[[end]]
 
 
 

@@ -10,7 +10,6 @@ import (
 	//"log"
 	"net/http"
 	"reflect"
-
 	"time"
 )
 
@@ -28,6 +27,14 @@ type Event struct {
 	UUID       string
 }
 */
+
+type Glicko2 struct {
+	UUID            string `json:"UUID"`
+	Rating          string `json:"Rating"`
+	RatingDeviation string `json:"RatingDeviation"`
+	Volatility      string `json:"Volatility"`
+	NumResults      string `json:"NumResults"`
+}
 
 type Gamesifter struct {
 	Name string
@@ -155,6 +162,31 @@ func getEventName() string {
 	return retval.String()
 }
 
+/******** GLICKO2 NODE *************/
+func (n *Glicko2) Create() neoism.Props {
+	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
+	n.UUID = getUUID()
+	n.Rating = "1500"
+	n.RatingDeviation = "350"
+	n.Volatility = "0.06"
+	n.NumResults = "0"
+
+	return neoism.Props{
+		"UUID":            n.UUID,
+		"Rating":          n.Rating,
+		"RatingDeviation": n.RatingDeviation,
+		"Volatility":      n.Volatility,
+		"NumResults":      n.NumResults,
+	}
+}
+
+func (n *Glicko2) Read() string {
+
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(n))
+	revel.TRACE.Println("Searching for  ", n.UUID)
+	return "MATCH (node:Glicko2 { UUID:\"" + n.UUID + "\" }) RETURN node"
+}
+
 /******** LOCATION NODE *************/
 func (n *Location) Create() neoism.Props {
 	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
@@ -249,6 +281,7 @@ func (n *Player) Create() neoism.Props {
 
 	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
 	n.UUID = getUUID()
+
 	return neoism.Props{
 		"Firstname": n.Firstname,
 		"Surname":   n.Surname,

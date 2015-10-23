@@ -20,6 +20,10 @@ type Played_In struct {
 	UUID   string
 }
 
+type Rating_Glicko2 struct {
+	UUID string
+}
+
 type Played_With struct {
 	UUID string
 }
@@ -156,6 +160,26 @@ func (r *Last_Event) Create() neoism.Props {
 }
 
 func (r *Last_Event) Read() string {
+
+	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
+	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)
+	return "asdf"
+	//"MATCH (node:Game { Name:\"" + n.Name + "\", Published:\"" + n.Published + "\" }) RETURN node"
+
+}
+
+/******** GLICKO2 Rating *************/
+func (r *Rating_Glicko2) Create() neoism.Props {
+
+	revel.TRACE.Println("Creating ", reflect.TypeOf(r))
+	r.UUID = getUUID()
+	return neoism.Props{
+		"UUID": r.UUID,
+	}
+
+}
+
+func (r *Rating_Glicko2) Read() string {
 
 	revel.TRACE.Println("Reading  ", reflect.TypeOf(r))
 	//revel.TRACE.Println("Searching for  ", n.Name, n.Published, n.UUID)

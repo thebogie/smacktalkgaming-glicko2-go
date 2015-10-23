@@ -8,6 +8,8 @@ module:jobs
 GET     	/                                       Application.Index
 GET     	/auth                                   Application.Auth
 GET     	/logout                                 Application.Logout
+GET 		/start/:uuid							Application.Start
+//GET			/updateratings/:seedPlayerUUID			Glicko2Rating.UpdateRatings
 GET     	/profile/:uuid	             			Profile.Show
 GET     	/players/list                           Players.List
 POST		/players/createlist                    	Players.CreateList
@@ -42,7 +44,7 @@ GET			/seed/:kind								Seed.Index
 
 # Map static resources from the /app/public folder to the /public path
 GET     /public/*filepath                       Static.Serve("public")
-GET     /favicon.ico                            Static.Serve("public/img","favicon.png")
+GET     /favicon.ico                            Static.Serve("public/img","favicon.ico")
 
 # Catch all
 *       /:controller/:action                  :controller.:action

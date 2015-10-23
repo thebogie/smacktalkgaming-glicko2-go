@@ -136,9 +136,9 @@ func (c Seed) Index(kind string) revel.Result {
 	if kind == "onevent" {
 		seedaction(neo,
 			&models.Event{
-				Numplayers: "3",
-				Start:      "XXXXXXX",
-				Stop:       "YYYYYYY",
+				Numplayers: "4",
+				Start:      "2015-10-20T03:35:00+01:00",
+				Stop:       "2015-10-20T04:35:00+01:00",
 			},
 			&models.Location{
 				Locationname: "2613 W 10th St, Austin, TX, United States",
@@ -149,11 +149,13 @@ func (c Seed) Index(kind string) revel.Result {
 				&models.Player{Firstname: "Olivia", Surname: "Gottlieb"},
 				&models.Player{Firstname: "Mitch", Surname: "Gottlieb"},
 				&models.Player{Firstname: "Myron", Surname: "Gottlieb"},
+				&models.Player{Firstname: "Lilyan", Surname: "Gottlieb"},
 			},
 			[]*models.Played_In{
 				&models.Played_In{Result: "WON", Place: "1"},
 				&models.Played_In{Result: "LOST", Place: "2"},
 				&models.Played_In{Result: "LOST", Place: "3"},
+				&models.Played_In{Result: "DROP", Place: "4"},
 			},
 			[]*models.Game{
 				&models.Game{Name: "Payday", Published: "1973"},
@@ -2706,6 +2708,10 @@ func seedaction(neo *models.Neo4jObj,
 		neo.CreateRelate(UUIDnodePlayer, UUIDEvt, playedin[index])
 		neo.CreateRelate(UUIDEvt, UUIDnodePlayer, &models.Included{})
 	}
+
+	//Update rankings
+	revel.TRACE.Println("UPDATE RANKINGS:", UUIDEvt)
+	afterEventRankingUpdate(UUIDEvt)
 
 }
 

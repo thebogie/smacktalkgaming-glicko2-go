@@ -1,0 +1,22 @@
+<md-dialog>
+	<md-card>							 
+							
+		<h2 class="md-title">Who are my Nemeses?</h2>
+		<p>
+		<b>Nemeses</b>: Top 3 people who have placed higher than you in total events.
+		</p>
+								
+		<md-list>
+			<md-list-item 	class="md-2-line" ng-repeat="nemesis in stats.nemesis">
+				<div class="md-list-item-text" layout="column">
+					<h3>{{ nemesis.name }}</h3>
+					<h3>Beaten you: {{ nemesis.record }} times </h3>
+				</div>
+										
+			</md-list-item>
+		</md-list>
+			
+	</md-card>
+</md-dialog>
+							  
+					

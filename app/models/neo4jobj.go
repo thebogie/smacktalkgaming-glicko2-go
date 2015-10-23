@@ -42,6 +42,7 @@ func (neo *Neo4jObj) init() {
 
 		dbconnect, err := neoism.Connect(neo4jdburl + "/db/data")
 		neo.dbc = dbconnect
+		neo.dbc.Session.Log = false
 
 		if err != nil {
 			revel.TRACE.Panicln("Database not connecting", err)
@@ -85,6 +86,12 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 			match a, b where a.UUID ={UUIDnodeA} 
 			AND b.UUID = {UUIDnodeB} 
 			CREATE (a)-[r:PLAYED_IN {relateProps}]->(b) RETURN r
+		`)
+	case *Rating_Glicko2:
+		statements = append(statements, `
+			match a, b where a.UUID ={UUIDnodeA} 
+			AND b.UUID = {UUIDnodeB} 
+			CREATE (a)-[r:RATING_GLICKO2 {relateProps}]->(b) RETURN r
 		`)
 	case *Played_With:
 		statements = append(statements, `
@@ -166,14 +173,20 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 		case *Gamesifter:
 			label = "Gamesifter"
 		case *Game:
-
 			label = "Game"
 		case *Player:
 			label = "Player"
+
+			//create rating node and relate
+			UUIDGLICKO2 := neo.Create(&Glicko2{})
+			neo.CreateRelate(UUID, UUIDGLICKO2, &Rating_Glicko2{})
 		case *Event:
 			label = "Event"
+
 		case *Location:
 			label = "Location"
+		case *Glicko2:
+			label = "Glicko2"
 		default:
 			revel.TRACE.Println("NODE TYPE", t)
 		}
@@ -190,6 +203,7 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 	}
 
 	switch node.(type) {
+
 	case *Game:
 
 		var gamename string
@@ -207,6 +221,7 @@ func (neo *Neo4jObj) Create(node Node) (UUID string) {
 			startswithletter := "STARTS_WITH_" + strings.ToUpper(string(capletter[0]))
 			neo.CreateRelate(UUIDGamesifter, UUID, &Starts_With{Relatename: startswithletter})
 		}
+
 	}
 
 	return UUID

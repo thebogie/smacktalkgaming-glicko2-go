@@ -1,0 +1,783 @@
+
+<html lang="en" ng-app="SmackTalkApp">
+    <head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- Angular Material CSS using GitCDN to load directly from `bower-material/master` -->
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.10.1/angular-material.css">
+		<link rel="stylesheet" href="/public/css/smacktalkapp.css">
+		
+		<!-- style sheet -->
+		<link rel="stylesheet" href="http://rawgit.com/daniel-nagy/md-data-table/master/dist/md-data-table.css" />
+
+		<style>
+
+		</style>
+		
+		<!-- Angular Material Dependencies -->
+
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-animate.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-aria.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-messages.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-route.min.js"></script>
+		
+
+		<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.10.1/angular-material.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-icons/0.6.0/angular-material-icons.min.js"></script>
+	  
+		<!-- https://github.com/daniel-nagy/md-data-table -->
+		<script type="text/javascript" src="http://rawgit.com/daniel-nagy/md-data-table/master/dist/md-data-table.js"></script>
+
+		  
+		<!-- Extra tools -->
+		 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true&libraries=places&language=en-US"></script>
+  	
+		<script type="text/javascript" src="/public/js/vendor/moment-with-locales.js"></script>
+		<script type="text/javascript" src="/public/js/vendor/moment-timezone-with-data.js"></script>
+		
+		<script>
+
+			var app = angular.module( 'SmackTalkApp' ,  [ 'ngMaterial',  'ngMdIcons', 'ngMessages' ] ); 
+			
+			
+			var URLplayeroverallstats = [[url "Players.OverallStats"]];
+			var URLplayerstatus = [[url "Players.Status"]];
+			var URLstats = [[url "Stats.Grab"]];
+			var URLplayerslistautocomplete = [[url "Players.ListAutoComplete"]];
+			var URLplayerlastlocation = [[url "Players.GetLastLocation"]];
+			var URLgameslistautocomplete = [[url "Games.ListAutoComplete"]];
+			var URLeventstatus = [[url "Events.Status"]];
+			var URLlasteventstatus = [[url "Events.LastStatus"]];
+			var creatoruuid = "";
+
+			[[if .permission]]
+				var permission = [[.permission]];
+				console.log("PERMISSION", permission);
+			[[end]]
+
+		
+			[[if .playerinfo]]
+				var playerinfo = [[.playerinfo]];
+				console.log("EVENTS", playerinfo);
+			[[end]]
+		
+			[[if .events]]
+				var eventsList = [[.events]];
+				console.log("EVENTS", eventsList);
+			[[end]]
+			
+			[[if .playedins]]
+				var playedinsList = [[.playedins]];
+				console.log("Playedin", playedinsList);
+			[[end]]
+			
+			[[if .games]]
+				var gamesList = [[.games]];
+				console.log("Games", gamesList);
+			[[end]]
+		
+			[[if .eventcargo]]
+				var eventcargo = [[.eventcargo]];
+				console.log("eventcargo", eventcargo);
+			[[end]]
+			
+			
+			
+			<!-- TODO: ADD Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+		
+		</script>
+		
+
+		<!-- smacktalk object -->
+		<script type="text/javascript" src="/public/js/app/directives/event.js"></script>
+		<script type="text/javascript" src="/public/js/app/services/stats.js"></script>
+		<script type="text/javascript" src="/public/js/app/directives/httpFactory.js"></script>
+		<script type="text/javascript" src="/public/js/app/controllers/smacktalkappctrl.js"></script>
+	
+	</head>
+	<body  layout="row" ng-controller="SmackTalkAppCtrl">
+	
+	
+	
+	
+	<md-sidenav layout="column" class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
+      <md-toolbar class="md-tall md-hue-2">
+        <span flex></span>
+        <div layout="column" class="md-toolbar-tools-bottom inset">
+          <user-avatar></user-avatar>
+          <span></span>
+          <div>[[.playerinfo.Firstname]] "[[.playerinfo.Nickname]]" [[.playerinfo.Surname]]</div>
+          
+		  <a href="[[url "Application.Logout"]]">logout</div></a> 
+        </div>
+      </md-toolbar>
+      <md-list>
+      <md-item ng-repeat="item in menu">
+        <a>
+          <md-item-content md-ink-ripple layout="row" layout-align="start center">
+            <div class="inset">
+              <ng-md-icon icon="{{item.icon}}"></ng-md-icon>
+            </div>
+            <div ng-click="menuEvent(item.action)" class="inset">{{item.title}}
+            </div>
+          </md-item-content>
+        </a>
+      </md-item>
+      <md-divider></md-divider>
+      <md-subheader>Management</md-subheader>
+      <md-item ng-repeat="item in admin">
+        <a>
+          <md-item-content md-ink-ripple layout="row" layout-align="start center">
+            <div class="inset">
+              <ng-md-icon icon="{{item.icon}}"></ng-md-icon>
+            </div>
+            <div class="inset">{{item.title}}
+            </div>
+          </md-item-content>
+        </a>
+      </md-item>
+    </md-list>
+    </md-sidenav>
+	
+	
+	<div ng-show="showRecordEvent" layout="column" class="relative" layout-fill >
+	
+			<!-- RECORD EVENT -->
+	<!--
+		<md-button class="md-fab md-fab-bottom-right" aria-label="Add" ng-click="showAdd($event)">
+        <ng-md-icon icon="add"></ng-md-icon>
+		</md-button>
+		-->
+      <md-toolbar ng-show="!showSearch">
+        <div class="md-toolbar-tools">
+          <md-button ng-click="toggleSidenav('left')" hide-gt-md aria-label="Menu">
+            <ng-md-icon icon="menu"></ng-md-icon>
+          </md-button>
+          <h3>
+            Record Event
+          </h3>
+          <span flex></span>
+          <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+            <ng-md-icon icon="search"></ng-md-icon>
+          </md-button>
+          <md-button aria-label="Open Settings" ng-click="showListBottomSheet($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+        </div>
+		
+
+		<div ng-controller="EventCtrl">
+			<md-content id="elementCtrls" ng-show="showAskQuestions" layout="column" ng-controller="GameCtrl">
+				<md-content class="md-padding" >
+				 
+					<md-autocomplete 
+						  ng-disabled="isDisabled"
+						  md-no-cache="false"
+						  md-selected-item="selectedItem"
+						  md-search-text-change="searchTextChange(searchText)"
+						  md-search-text="searchText"
+						  md-selected-item-change="selectedItemChange(item)"
+						  md-items="item in querySearch(searchText)"
+						  md-item-text="item.Name + ' (' + item.Published + ')'"
+						  md-min-length="2"
+						  md-delay="1000"
+						  md-floating-label="Choose your game(s)"
+						 >
+						<md-item-template>
+						<span md-highlight-flags="^i" md-highlight-text="searchText"> {{item.Name}} ({{item.Published}})</span>
+						</md-item-template>
+						<md-not-found >
+						  No matches found for "{{searchText}}".
+						</md-not-found>
+					</md-autocomplete>
+					
+				</md-content>
+				<md-content>
+					<md-progress-circular md-mode="indeterminate" ng-show="isLoading"></md-progress-circular>
+				</md-content>
+				<md-content >
+					<md-list>
+					  <md-list-item class="md-3-line" ng-repeat="game in gamelist">
+						<div data-ng-click="removeItem(game.UUID)" class="md-list-item-text">
+						  <font size="4" color="blue">{{game.Name}} {{game.Published}}</font>
+						</div>
+						
+					  </md-list-item>
+					</md-list>
+				</md-content>
+			</md-content>
+			<md-content layout="column" ng-show="showAskQuestions" ng-controller="PlayerCtrl">
+				
+				  <md-content class="md-padding">
+				
+					  <md-autocomplete
+						  ng-disabled="isDisabled"
+						  md-no-cache="false"
+						  md-selected-item="selectedItem"
+						  md-search-text-change="searchTextChange(searchText)"
+						  md-search-text="searchText"
+						  md-selected-item-change="selectedItemChange(item)"
+						  md-items="item in querySearch(searchText)"
+						  md-item-text="item.Firstname + ' ' + item.Surname"
+						  md-min-length="2"
+						  md-delay="500"
+						  md-floating-label="Choose your players">
+						<md-item-template>
+						  <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.Firstname}} {{item.Nickname !== "" ? ('"'+item.Nickname+'"') : ''}}  {{item.Surname}}</span>
+						</md-item-template>
+						<md-not-found>
+						  No matches found for "{{searchText}}".
+						</md-not-found>
+					  </md-autocomplete>
+					  <br/>
+					
+				  </md-content>
+				 
+				<md-content>
+					<md-progress-circular md-mode="indeterminate" ng-show="isLoading"></md-progress-circular>
+				</md-content>
+				
+				<md-content>
+					<md-list>
+					  <md-list-item class="md-2-line" ng-repeat="player in playerlist">
+						<div data-ng-click="removeItem(player.UUID)" class="md-list-item-text">
+						  <font size="4" color="blue">{{player.Firstname}} {{player.Nickname !== "" ? ('"'+player.Nickname+'"') : ''}} {{player.Surname}}</font>
+						</div>
+						<div class="md-list-item-text">
+							<md-input-container>
+								<md-select  ng-init="place=player.playedin.Place" ng-change="updatePlace(player.UUID, place)" ng-model="place">
+								  <md-option   ng-repeat="place in possibleplaces" value="{{place}}">{{place}}</md-option>
+								  <!-- selected="{{ place === player.playedin.Place ? 'selected' : '' }}" -->
+								</md-select>
+							</md-input-container>
+						</div>
+						<div class="md-list-item-text">
+							<md-input-container>
+								<md-select ng-init="result=player.playedin.Result" ng-change="updateResult(player.UUID, result)"  ng-model="result">
+								  <md-option  ng-repeat="result in possibleresults" value="{{result}}">{{result}}</md-option>
+								</md-select>
+								
+							</md-input-container>
+						</div>
+
+
+					  </md-list-item>
+					</md-list>
+				</md-content>
+			</md-content>
+
+			
+			<md-content  ng-show="showAskQuestions"  layout="row" layout-wrap ng-controller="LocationDateTimeCtrl">
+				
+				<md-content>
+					<label>Location: </label>
+					<input style=""  ng-init="chosenPlace=setLastLocation()" ng-model="chosenPlace" googleplace/>
+					<md-button class="md-raised md-no-ink" ng-click="onClick()">Select</md-button>
+							
+				</md-content>
+					 
+				<md-content layout="row" layout-fill ng-hide="hideDateTime">
+						<md-content layout="column"  ng-model="start">
+							
+								<md-button class="{{classState}}" ng-click="lockStartTime(start)" ng-model="startButton">{{startButton}}</md-button>
+							
+								<md-input-container>
+									<label>Year</label>
+									<md-select ng-change="startChange()" ng-model="start.year">
+										<md-option ng-repeat="year in years" value="{{year}}">{{year}}</md-option>
+									</md-select>
+									
+								</md-input-container>
+						
+							
+							
+								<md-input-container>
+									<label>Month</label>
+									<md-select ng-change="startChange()" ng-model="start.month">
+										<md-option  ng-repeat="month in months" value="{{month}}">{{month}}</md-option>
+									</md-select>
+								</md-input-container>
+						
+							
+							
+								<md-input-container >
+									<label>Day</label>
+									<md-select ng-change="startChange()" ng-model="start.day">
+										<md-option type="text" ng-repeat="day in days" value="{{day}}">{{day}}</md-option>
+									</md-select>
+								</md-input-container>
+								
+								<md-input-container >
+									<label>Time:</label>
+								</md-input-container>
+							
+							
+								<md-input-container >
+									<label>Hour</label>
+									<md-select  ng-change="startChange()" ng-model="start.hour">
+										<md-option   ng-repeat="hour in hours" value="{{hour}}">{{hour}}</md-option>
+									</md-select>
+								</md-input-container>
+							
+							
+							
+								<md-input-container>
+									<label>Minute</label>
+									<md-select ng-change="startChange()" ng-model="start.minute">
+										<md-option ng-repeat="minute in minutes" value="{{minute}}">{{minute}}</md-option>
+									</md-select>
+								</md-input-container>
+								
+
+								
+						</md-content>
+
+						<md-content layout="column"  ng-hide="hideDateTime" ng-model="stop">
+								
+								<md-button class="{{stopclassState}}" ng-click="lockStopTime(stop)" ng-model="stopButton">{{stopButton}}</md-button>
+							
+								<md-input-container >
+									<label>Year</label>
+									<md-select ng-model="stop.year">
+										<md-option ng-repeat="year in years" value="{{year}}">{{year}}</md-option>
+									</md-select>
+								</md-input-container>
+							
+								<md-input-container>
+									<label>Month</label>
+									<md-select ng-model="stop.month">
+										<md-option  ng-repeat="month in months" value="{{month}}">{{month}}</md-option>
+									</md-select>
+								</md-input-container>
+							
+								<md-input-container >
+									<label>Day</label>
+									<md-select ng-model="stop.day">
+										<md-option type="text" ng-repeat="day in days" value="{{day}}">{{day}}</md-option>
+									</md-select>
+								</md-input-container>
+								
+								<md-input-container >
+									<label>Time:</label>
+								</md-input-container>
+							
+								<md-input-container >
+									<label>Hour</label>
+									<md-select  ng-model="stop.hour">
+										<md-option   ng-repeat="hour in hours" value="{{hour}}">{{hour}}</md-option>
+									</md-select>
+								</md-input-container>
+							
+								<md-input-container>
+									<label>Minute</label>
+									<md-select ng-model="stop.minute">
+										<md-option ng-repeat="minute in minutes" value="{{minute}}">{{minute}}</md-option>
+									</md-select>
+								</md-input-container>
+								
+								
+						</md-content>
+				</md-content>
+			<!--END OF QUESTIONS -->
+			</md-content>
+			
+			
+
+			<md-content  ng-show="showPassedChecks">
+				<u>Games played:</u> 
+				<div ng-repeat="game in showgames">
+					{{game.Name}}
+				</div><br>
+				<u>Players involved:</u>
+				<div ng-repeat="player in showplayers">
+					{{player.Firstname}} {{player.Surname}}  ({{player.playedin.Result}} in place:{{player.playedin.Place}})
+				</div><br>
+				
+				at
+				<div ng-repeat="location in showlocations">
+					{{location.Locationname}}
+				</div><br>
+				Start time: {{showevent.start}} <br>
+				End time: {{showevent.end}} <br>
+
+				<md-button class="md-primary"  ng-click="recordIt()" ng-model="recordButton">Record it</md-button>
+				<md-button class="md-primary"  ng-click="goback()" ng-model="recordButton">Redo</md-button>
+			</md-content>
+		</div>
+	</md-toolbar>
+	<md-toolbar class="md-hue-1" ng-show="showSearch">
+        <div class="md-toolbar-tools">
+          <md-button ng-click="showSearch = !showSearch" aria-label="Back">
+            <ng-md-icon icon="arrow_back"></ng-md-icon>
+          </md-button>
+          <h3 flex="10">
+            Back
+          </h3>
+          <md-input-container md-theme="input" flex>
+            <label>&nbsp;</label>
+            <input ng-model="search.who" placeholder="enter search">
+          </md-input-container>
+          <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+            <ng-md-icon icon="search"></ng-md-icon>
+          </md-button>
+          <md-button aria-label="Open Settings" ng-click="showListBottomSheet($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+        </div>
+      </md-toolbar>
+      
+	</div>
+	
+	
+	
+    <div ng-show="showDashboard" layout="column" class="relative" layout-fill role="main">
+      <!-- <md-button class="md-fab md-fab-bottom-right" aria-label="Add" ng-click="showAdd($event)">
+        <ng-md-icon icon="add"></ng-md-icon>
+      </md-button>
+	  -->
+      <md-toolbar ng-show="!showSearch">
+        <div class="md-toolbar-tools">
+          <md-button ng-click="toggleSidenav('left')" hide-gt-md aria-label="Menu">
+            <ng-md-icon icon="menu"></ng-md-icon>
+          </md-button>
+          <h3>
+            Dashboard
+          </h3>
+          <span flex></span>
+          <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+            <ng-md-icon icon="search"></ng-md-icon>
+          </md-button>
+          <md-button aria-label="Open Settings" ng-click="showListBottomSheet($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+        </div>
+			
+		<!-- TABS -->
+        <md-tabs  md-stretch-tabs md-dynamic-height md-border-bottom class="md-primary" md-selected="data.selectedIndex">
+			<md-tab label="Profile" id="tab1" aria-controls="tab1-content">	  
+				<md-content layout-padding style="background-color: #b4dcb3;" >
+					<div  layout="column"   ng-controller="OverAllStatsCtrl" ng-model="overallstats">
+					<table  border="0"  id="DDtable">
+					<tr>
+						<td></td>
+						<td>
+							<div  ng-controller="ProfileCtrl"  ng-submit="update(projectForm);">
+							  <md-content  style="background-color: #b4dcb3;" layout="row"  layout-padding>
+								<form   name="projectForm">
+								 <md-input-container>
+									<label>Nickname</label>
+									<input   style="width:150px" name="nickname" ng-model="project.nickname">
+									<!--
+									<div ng-messages="projectForm.nickname.$error"> 
+									  <div ng-message="md-maxlength">The name has to be less than 30 characters long.</div>
+									</div>
+									-->
+
+								 </md-input-container>
+								 <md-input-container>
+									<label>Birth Year</label>
+									<input  type="number" style="width:80px" name="birthdate" ng-model="project.birthdate" min="1900" max="2999">
+
+									<!--
+									<div ng-messages="projectForm.birthdate.$error">
+									  <div ng-message="min">There is no way you were born before 1900... unless. Time traveler?</div>
+									  <div ng-message="max">There is no way you were born after 2999... unless. Time traveler?</div>
+									</div>
+									-->
+
+								  </md-input-container>
+								  
+								  
+								  <md-input-container>
+									<label>Alignment</label>
+									<md-select style="width:170px" name="alignment" ng-model="project.alignment" placeholder="Alignment">
+											<md-option ng-repeat="alignment in alignments" value="{{alignment}}">{{alignment}}</md-option>
+									</md-select>
+								  
+
+								  </md-input-container>
+								  <md-button  ng-show="somethingchanged(projectForm)" class="md-raised md-primary" name="updateButton">Update Profile</md-button>
+								</form>
+							  </md-content>
+							</div>
+						</td>
+						<td></td>
+
+						<td  colspan="0"   style=' text-align: center; 
+										vertical-align: middle; 
+										width: 278px; height: 200px; 
+										background-image: url("/public/img/profile/sketch.png");
+										background-repeat: no-repeat; '> 
+								
+						</td>
+						<td></td>
+						<td></td>
+						<td></td>
+
+
+
+					</tr>
+					<tr style="height:110px" >
+						<td style="width:5px"></td>
+						<td  style='text-align: center; 
+									vertical-align: middle; 
+									width:200px; height: 100px; 
+									background-image: url("/public/img/profile/armourclass.png");
+									background-repeat: no-repeat; '> 
+									
+							
+						</td>
+						<td style="width:10px"></td>
+						<td style=' text-align: center; 
+									vertical-align: middle; 
+									width: 116px; height: 88px; 
+									background-image: url("/public/img/profile/hitpoints.png");
+									background-repeat: no-repeat; '> 
+							
+						</td>
+						<td style="width:10px"></td>
+						<td></td>
+						<td></td>
+						
+					</tr>
+					
+					</table>
+					<br><br>
+					
+					<table border="0" id="stattable">
+					<tr>
+						<td style="width:5px"></td>
+						<td  style='text-align: center; 
+									vertical-align: middle; 
+									width: 87px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackground.png");
+									background-repeat: no-repeat; '> 
+									
+							<b>{{overallstats.eventsinfo.total}}</b>
+						</td>
+						<td style="width:3px"></td>
+						<td>  <span><b>{{overallstats.eventsinfo.title}}</b></span> </td>
+						<td style="width:15%"></td>
+						
+						<td style=' text-align: center; 
+									vertical-align: middle; 
+									width: 91px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+									background-repeat: no-repeat; '> 
+							<b>{{overallstats.stats.won.total}}</b>
+						</td>
+						<td style="width:5px"></td>
+						<td> <span><b>{{overallstats.stats.won.title}}</b></span> </td>
+					</tr>
+
+					<tr>
+						<td style="width:5px"></td>
+						<td style='	text-align: center; 
+									vertical-align: middle; 
+									width: 87px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackground.png");
+									background-repeat: no-repeat; '> 
+									
+							<b>{{overallstats.gamesinfo.total}}</b>
+						</td>
+						<td style="width:5px"></td>
+						<td> <span><b>{{overallstats.gamesinfo.title}}</b></span> </td>
+						<td style="width:15%"></td>
+						
+						<td style=' text-align: center; 
+									vertical-align: middle; 
+									width: 91px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+									background-repeat: no-repeat; '> 
+							<b>{{overallstats.stats.lost.total}}</b>
+						</td>
+						<td style="width:3px"></td>
+						<td> <span><b>{{overallstats.stats.lost.title}}</b></span> </td>
+					</tr>
+
+					<tr>
+						<td style="width:5px"></td>
+						<td style='	text-align: center; 
+									vertical-align: middle; 
+									width: 87px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackground.png");
+									background-repeat: no-repeat; '> 
+									
+							<b>{{overallstats.playersinfo.total}}</b>
+						</td>
+						<td style="width:5px"></td>
+						<td> <span><b>{{overallstats.playersinfo.title}}</b></span> </td>
+						<td style="width:15%"></td>
+						
+						<td style=' text-align: center; 
+									vertical-align: middle; 
+									width: 91px; height: 96px; 
+									background-image: url("/public/img/profile/charactersheetbackgroundcircle.png");
+									background-repeat: no-repeat; '> 
+							<b>{{overallstats.stats.other.total}}</b>
+						</td>
+						<td style="width:3px"></td>
+						<td> <span><b>{{overallstats.stats.other.title}}</b></span> </td>
+						
+
+					</tr>
+					</table>
+					</div>
+				</md-content>
+		  
+			</md-tab>
+			<md-tab label="Stats" id="tab2" aria-controls="tab2-content">
+			  
+				<md-content layout-padding style="background-color: #b4dcb3;" >
+
+					<div  layout="column" ng-controller="CoolStats" ng-model="stats">
+					  <div flex >
+					  
+					  <!--NEMESES-->
+						  <md-card>
+							  <md-card-content ng-init="NemesisInit()" >
+								<h2 class="md-title">Who are my Nemeses?</h2>
+								<p>
+								  <b>Nemeses</b>: Top 3 people who have placed higher than you in total events.
+								</p>
+								
+								<md-list>
+									<md-list-item 	class="md-2-line" 
+													ng-repeat="nemesis in stats.nemesis">
+										<div class="md-list-item-text" layout="column">
+											<h3>{{ nemesis.name }}</h3>
+											<h3>Beaten you: {{ nemesis.record }} times </h3>
+										</div>
+										
+									</md-list-item>
+								</md-list>
+								<!-- EXAMPLE CHART 
+								<canvas ng-show="shownemeses" id="nemesis" class="chart chart-doughnut" 
+										chart-data="stats.nemesis.data"
+										chart-labels="stats.nemesis.labels" 
+										chart-legend="stats.nemesis.legend" >
+								</canvas> 
+								-->
+								
+								
+							  </md-card-content>
+							  
+							</md-card>
+						
+					  </div>
+					  <div flex>
+						<!--DOMINATING-->
+							<md-card>
+							  <md-card-content ng-init="NemesisInit()" >
+								<h2 class="md-title">Who am I dominating?</h2>
+								<p>
+								  
+								  <b>Dominating</b>: Top 3 people who have placed lower than you in total events.
+								</p>
+								
+								<md-list>
+									<md-list-item 	 class="md-2-line" 
+													ng-repeat="dominate in stats.dominate">
+					
+										<div class="md-list-item-text" layout="column">
+											<h3>{{ dominate.name }}</h3>
+											<h3>You have beaten: {{ dominate.record }} times </h3>
+										</div>
+										
+									</md-list-item>
+								</md-list>
+								<!--
+								<canvas ng-show="showdominate" id="dominate" class="chart chart-doughnut" 
+										chart-data="stats.dominate.data" 
+										chart-labels="stats.dominate.labels" 
+										chart-legend="stats.dominate.legend">
+								</canvas> 
+								-->
+								
+							  </md-card-content>
+							  
+							</md-card>
+					  </div>
+					  <div flex hide-sm>
+						
+					  </div>
+					</div>
+				</md-content>
+			</md-tab>
+			  
+			<md-tab label="Events" id="tab4" aria-controls="tab4-content">
+			  
+				
+				<md-content  style="background-color: #b4dcb3;"   layout-padding>
+					<div  ng-controller="EventsProfileCtrl" layout="column" ng-submit="update(projectForm);" ng-model="showevents" >
+						<md-data-table-toolbar>
+						  <h2 class="md-title">Events I have played in</h2>
+						</md-data-table-toolbar>
+
+						<md-data-table-container>
+						  <table md-data-table class="md-primary" >
+							<thead md-order="query.order" md-trigger="onOrderChange">
+							  <tr>
+								<th name="Games Played"  order-by="gamesplayed"></th>
+								<th name="Results"  order-by="results"></th>
+								<th name="Event Name"  order-by="Eventname"></th>
+								<th name="Start"  order-by="Start"></th>
+								<th name="End"  order-by="Stop"></th>
+								<th name="Location"  order-by="location"></th>
+
+								
+							  </tr>
+							</thead>
+							<tbody>
+							  <tr md-auto-select 
+							  ng-repeat="event in showevents | orderBy: query.order | limitTo: query.limit: (query.page - 1) * query.limit">
+							  
+								<td>{{event.gamesplayed}}</td>
+								<td>{{event.results}}</td>
+								<td>{{event.Eventname}}</td>
+								<td>{{event.Start}}</td>
+								<td>{{event.Stop}}</td>
+								<td>{{event.location}}</td>
+							  </tr>
+							</tbody>
+						  </table>
+						</md-data-table-container>		  
+						<md-data-table-pagination md-limit="query.limit" md-page="query.page" md-total="{{showevents.length}}" md-trigger="onPaginationChange"></md-data-table-pagination>
+						</div>
+				</md-content>
+			</md-tab>
+        </md-tabs>
+	</md-toolbar>
+    <md-toolbar class="md-hue-1" ng-show="showSearch">
+        <div class="md-toolbar-tools">
+          <md-button ng-click="showSearch = !showSearch" aria-label="Back">
+            <ng-md-icon icon="arrow_back"></ng-md-icon>
+          </md-button>
+          <h3 flex="10">
+            Back
+          </h3>
+          <md-input-container md-theme="input" flex>
+            <label>&nbsp;</label>
+            <input ng-model="search.who" placeholder="enter search">
+          </md-input-container>
+          <md-button aria-label="Search" ng-click="showSearch = !showSearch">
+            <ng-md-icon icon="search"></ng-md-icon>
+          </md-button>
+          <md-button aria-label="Open Settings" ng-click="showListBottomSheet($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+        </div>
+       
+    </md-toolbar>
+      
+    </div>
+
+	
+	
+	
+    </body>
+</html>
+
+
+
+

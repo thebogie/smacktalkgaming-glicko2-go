@@ -133,7 +133,12 @@ func (c Events) Commit() revel.Result {
 		neo.CreateRelate(UUIDEvt, UUIDnodePlayer, &models.Included{})
 		neo.CreateRelate(UUIDnodePlayer, UUIDEvt, &cargo.Playedin[index])
 		neo.CreateRelate(UUIDnodePlayer, UUIDEvt, &models.Last_Event{})
+
 	}
+
+	//Update rankings
+	revel.TRACE.Println("UPDATE RANKINGS:", UUIDEvt)
+	afterEventRankingUpdate(UUIDEvt)
 
 	return c.RenderJson(retEventStatus)
 }

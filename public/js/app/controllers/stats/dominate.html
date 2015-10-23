@@ -1,0 +1,25 @@
+<md-dialog>
+	<md-card>							 
+							
+<h2 class="md-title">Who am I dominating?</h2>
+								<p>
+								  
+								  <b>Dominating</b>: Top 3 people who have placed lower than you in total events.
+								</p>
+								
+								<md-list>
+									<md-list-item 	 class="md-2-line" 
+													ng-repeat="dominate in stats.dominate">
+					
+										<div class="md-list-item-text" layout="column">
+											<h3>{{ dominate.name }}</h3>
+											<h3>You have beaten: {{ dominate.record }} times </h3>
+										</div>
+										
+									</md-list-item>
+								</md-list>
+			
+	</md-card>
+</md-dialog>
+							  
+					

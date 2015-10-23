@@ -66,12 +66,65 @@ func (c Application) Index() revel.Result {
 
 		admin = CheckAdmin(u.PlayerUUID)
 
-		revel.INFO.Println("HERE", u.AccessToken)
-		revel.INFO.Println("HERE", u.PlayerUUID)
-		revel.INFO.Println("HERE", u.Uid)
+		revel.INFO.Println("Loggedin", u.AccessToken)
+		revel.INFO.Println("Loggedin", u.PlayerUUID)
+		revel.INFO.Println("Loggedin", u.Uid)
+		return c.Redirect("/start/%s", u.PlayerUUID)
 	}
+
 	authUrl := FACEBOOK.AuthCodeURL("foo")
 	return c.Render(me, authUrl, admin)
+}
+
+func (c Application) Start(uuid string) revel.Result {
+
+	//TODO: check to see if they are logged in
+	permission := make(map[string]string)
+	permission["readonly"] = "false"
+	if uuid != c.Session["playerUUID"] {
+		permission["readonly"] = "true"
+		//the player is not the one logged in, just show everything
+	}
+
+	//TODO: check if they are admin
+	//admin := CheckAdmin(uuid)
+
+	type profilecargo struct {
+		Event       models.Event
+		Games       []models.Game
+		Location    string
+		Result      models.Played_In
+		Competitors []models.Competitor
+	}
+
+	playerinfo := new(models.QueryObj).GetPlayer(uuid)
+
+	eventList := new(models.QueryObj).GetEventsByPlayer(uuid)
+	eventcargo := []profilecargo{}
+
+	for _, event := range eventList {
+		pc := profilecargo{}
+
+		pc.Event = event
+		pc.Games = new(models.QueryObj).GetGamesByEvent(event.UUID)
+		pc.Location = new(models.QueryObj).GetLocation(event)
+		pc.Competitors = new(models.QueryObj).GetCompetitorsByEvent(event.UUID)
+
+		//revel.TRACE.Println("adding PC", pc)
+
+		if pc.Games != nil {
+			eventcargo = append(eventcargo, pc)
+		}
+
+	}
+
+	_, playedins, games := new(models.QueryObj).GetOverallStats(uuid)
+	//retval2 := getOverall(uuid)
+
+	revel.TRACE.Println("eventcargo: ", eventcargo)
+	//events, playedins, games,
+	return c.Render(playerinfo, permission, eventcargo, games, playedins)
+
 }
 
 func (c Application) Auth(code string) revel.Result {

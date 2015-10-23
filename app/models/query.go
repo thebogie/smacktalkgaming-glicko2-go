@@ -6,13 +6,13 @@ import (
 	//"fmt"
 	"github.com/jmcvetta/neoism"
 	//"log"
-	"strconv"
-	//"mitchgottlieb.com/smacktalkgaming/app/models"
 	"bytes"
 	"encoding/gob"
 	"github.com/revel/revel"
+	//"mitchgottlieb.com/smacktalkgaming/app/models"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -580,7 +580,6 @@ func (qobj *QueryObj) GetEvent(uuid string) Event {
 
 	cq := neoism.CypherQuery{
 		Statement: `
-			start n=node(*)
 			MATCH (n:Event { UUID:{UUID} })
 			return 	n.Eventname as Eventname, 
 					n.Numplayers as Numplayers,
@@ -856,6 +855,110 @@ func (qobj *QueryObj) GetPlayerStatsByEvent(eventUUID string) (retval []Player, 
 
 	return retval, results
 
+}
+
+func (qobj *QueryObj) GetRatingByUUID(ratingUUID string) (retval Glicko2) {
+
+	res := []map[string]map[string]map[string]interface{}{}
+
+	prop := neoism.Props{"UUID": ratingUUID}
+
+	cq := neoism.CypherQuery{
+		Statement:  `MATCH (n:GLICKO2 { UUID:{UUID} }) return n`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	//reflect the struct instead of writing it out eveytime.
+	//assume: all strings
+	for _, v := range res {
+		//revel.TRACE.Println("VTYPE", v, reflect.TypeOf(v))
+
+		for ukey, u := range v {
+			//revel.TRACE.Println("ukey", ukey, u)
+			if ukey == "n" {
+				for wkey, w := range u {
+					//revel.TRACE.Println("wkey", wkey, w)
+					if wkey == "data" {
+
+						retval := Glicko2{}
+						for key, value := range w {
+							element := reflect.ValueOf(&retval).Elem().FieldByName(key)
+							if element.IsValid() {
+								element.SetString(value.(string))
+							}
+
+						}
+
+					}
+
+				}
+			}
+		}
+	}
+	return retval
+}
+
+//return competitors in placed order!
+func (qobj *QueryObj) GetPlayerGlicko2Rating(playerUUID string) (retval Glicko2) {
+
+	res := []map[string]map[string]map[string]interface{}{}
+
+	prop := neoism.Props{"UUID": playerUUID}
+
+	cq := neoism.CypherQuery{
+		Statement:  `MATCH (p:Player { UUID:{UUID} })-[:RATING_GLICKO2]->(n) return n`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	revel.TRACE.Println("did we find a rating?", res)
+
+	if len(res) <= 0 {
+		//TODO too low level?
+		neo := new(Neo4jObj)
+		neo.init()
+		glicko2UUID := neo.Create(&Glicko2{})
+		neo.CreateRelate(playerUUID, neo.Create(&Glicko2{}), &Rating_Glicko2{})
+		retval = qobj.GetRatingByUUID(glicko2UUID)
+
+	} else {
+		// get the glicko2 node
+
+		//reflect the struct instead of writing it out eveytime.
+		//assume: all strings
+		for _, v := range res {
+			//revel.TRACE.Println("VTYPE", v, reflect.TypeOf(v))
+
+			for ukey, u := range v {
+				//revel.TRACE.Println("ukey", ukey, u)
+				if ukey == "n" {
+					for wkey, w := range u {
+						//revel.TRACE.Println("wkey", wkey, w)
+						if wkey == "data" {
+
+							retval = Glicko2{}
+							for key, value := range w {
+								element := reflect.ValueOf(&retval).Elem().FieldByName(key)
+								//revel.TRACE.Println("element and key and value", element, key, value)
+								if element.IsValid() {
+									element.SetString(value.(string))
+								}
+
+							}
+
+						}
+
+					}
+				}
+			}
+		}
+	}
+	return retval
 }
 
 //return competitors in placed order!

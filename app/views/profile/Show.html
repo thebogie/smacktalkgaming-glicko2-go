@@ -292,39 +292,82 @@
 		
 
 
-		<div layout="row" ng-controller="CoolStats" ng-model="stats">
+		<div  layout="row" ng-controller="CoolStats" ng-model="stats">
 		  <div flex >
+		  
+		  <!--NEMESES-->
 			  <md-card>
 				  <md-card-content ng-init="NemesisInit()" >
-					<h2 class="md-title">Who are my Nemeses and who am I dominating?</h2>
+					<h2 class="md-title">Who are my Nemeses?</h2>
 					<p>
 					  <b>Nemeses</b>: Top 3 people who have placed higher than you in total events.
-					  <b>Dominating</b>: Top 3 people who have placed lower than you in total events.
 					</p>
 					<div class="md-actions" layout="row" layout-align="end center">
 					<md-button ng-click="showNemeses()">Nemeses</md-button>
-					<md-button ng-click="showDominate()">Dominating</md-button>
+					
 					</div>
 					
+					<md-list>
+						<md-list-item 	ng-show="shownemeses" class="md-2-line" 
+										ng-repeat="nemesis in stats.nemesis">
+        
+							<div class="md-list-item-text" layout="column">
+								<h3>{{ nemesis.name }}</h3>
+								<h3>Beaten you: {{ nemesis.record }} times </h3>
+							</div>
+							
+						</md-list-item>
+					</md-list>
+					<!-- EXAMPLE CHART 
 					<canvas ng-show="shownemeses" id="nemesis" class="chart chart-doughnut" 
 							chart-data="stats.nemesis.data"
 							chart-labels="stats.nemesis.labels" 
 							chart-legend="stats.nemesis.legend" >
 					</canvas> 
+					-->
 					
 					
+				  </md-card-content>
+				  
+				</md-card>
+			
+		  </div>
+		  <div flex>
+			<!--DOMINATING-->
+				<md-card>
+				  <md-card-content ng-init="NemesisInit()" >
+					<h2 class="md-title">Who am I dominating?</h2>
+					<p>
+					  
+					  <b>Dominating</b>: Top 3 people who have placed lower than you in total events.
+					</p>
+					<div class="md-actions" layout="row" layout-align="end center">
+					
+					<md-button ng-click="showDominate()">Dominating</md-button>
+					</div>
+					
+					<md-list>
+						<md-list-item 	ng-show="showdominate" class="md-2-line" 
+										ng-repeat="dominate in stats.dominate">
+        
+							<div class="md-list-item-text" layout="column">
+								<h3>{{ dominate.name }}</h3>
+								<h3>You have beaten: {{ dominate.record }} times </h3>
+							</div>
+							
+						</md-list-item>
+					</md-list>
+					<!--
 					<canvas ng-show="showdominate" id="dominate" class="chart chart-doughnut" 
 							chart-data="stats.dominate.data" 
 							chart-labels="stats.dominate.labels" 
 							chart-legend="stats.dominate.legend">
 					</canvas> 
+					-->
 					
 				  </md-card-content>
 				  
 				</md-card>
-		  </div>
-		  <div flex>
-			
 		  </div>
 		  <div flex hide-sm>
 			
@@ -745,6 +788,8 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory',  function($scope, myHttp
 	$scope.shownemeses = false;
 	$scope.showdominate = false;
 	
+	
+	/* EXAMPLE of chart
 	$scope.stats =  {
 		nemesis: { 
 					labels: [],
@@ -757,12 +802,25 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory',  function($scope, myHttp
 			data: [] 
 		}
 	};
+	*/
+	
+	$scope.stats = {
+		nemesis: [
+			
+		],
+		
+		dominate: [
+			
+		]
+	
+	
+	};
 	
 	
 	console.log("CoolStats");
 	
 	FindNemesis($scope.stats);
-	//console.log("nemesis", $scope.stats.nemesis);
+	console.log("nemesis", $scope.stats.nemesis);
 	
 	/*
 	$scope.stats.nemesis.labels = ['nemeses'];
@@ -787,10 +845,10 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory',  function($scope, myHttp
 
 	$scope.showNemeses = function () {
 		$scope.shownemeses = true;
-		$scope.showdominate = false;
+		//$scope.showdominate = false;
 	};
 	$scope.showDominate = function () {
-		$scope.shownemeses = false;
+		//$scope.shownemeses = false;
 		$scope.showdominate = true;
 	};
 
@@ -799,7 +857,7 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory',  function($scope, myHttp
 
 
 
-function FindNemesis(chart) {
+function FindNemesis(stats) {
 
 	
 
@@ -900,10 +958,15 @@ function FindNemesis(chart) {
 					}
 					return 0;
 			});
-	
-		chart.nemesis.legend = true;
-		chart.nemesis.labels = [rated[0].name, rated[1].name, rated[2].name];
-		chart.nemesis.data = [rated[0].beatenbythem, rated[1].beatenbythem, rated[2].beatenbythem];
+
+		stats.nemesis.push({ name:rated[0].name, record:rated[0].beatenbythem});
+		stats.nemesis.push({ name:rated[1].name, record:rated[1].beatenbythem});
+		stats.nemesis.push({ name:rated[2].name, record:rated[2].beatenbythem});
+
+		//for charts
+		//chart.nemesis.legend = true;
+		//chart.nemesis.labels = [rated[0].name, rated[1].name, rated[2].name];
+		//chart.nemesis.data = [rated[0].beatenbythem, rated[1].beatenbythem, rated[2].beatenbythem];
 	
 	
 		rated.sort(function(a, b) {
@@ -916,12 +979,17 @@ function FindNemesis(chart) {
 					return 0;
 			});
 	
+		stats.dominate.push({ name:rated[0].name, record:rated[0].beatthem});
+		stats.dominate.push({ name:rated[1].name, record:rated[1].beatthem});
+		stats.dominate.push({ name:rated[2].name, record:rated[2].beatthem});
+	
+	
+		/*
 		chart.dominate.legend = true;
 		chart.dominate.labels = [rated[0].name, rated[1].name, rated[2].name];
 		chart.dominate.data = [rated[0].beatthem, rated[1].beatthem, rated[2].beatthem];
+		*/
 	}
-	
-	console.log("chart", chart);
 };
 
 
