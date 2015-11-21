@@ -2,7 +2,7 @@
 queries: MATCH (n:Event)-[r]->(m) WHERE n.Start =~ '2015-06.*' return n,r,m
 
 delete all: MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r
-
+delete all ratings: MATCH (p:Player)-[r:RATING_GLICKO2]-(g:Glicko2) DELETE r,g
 MATCH (n { UUID: '835f0e03-40d2-4b18-8d16-3f68459bedb2' }) SET n.Nickname = 'MasterBlaster' RETURN n
 
 **** Delete all relationships from and to node 

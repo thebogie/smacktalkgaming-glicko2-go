@@ -30,6 +30,7 @@ POST     	/events/commit                          Events.Commit
 GET     	/events/status/:event                   Events.Status
 GET     	/events/laststatus/:playeruuid          Events.LastStatus
 GET			/stats/grab/:playeruuid/:action			Stats.Grab
+POST		/stats/gapitimez/						Stats.GetGoogleTimeZone
 GET			/seed/:kind								Seed.Index
 #GET     /hotels/:id/booking                     Hotels.Book
 #POST    /hotels/:id/booking                     Hotels.ConfirmBooking

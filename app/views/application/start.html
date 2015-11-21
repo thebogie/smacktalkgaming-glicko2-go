@@ -12,6 +12,7 @@
 		<link rel="stylesheet" href="http://rawgit.com/daniel-nagy/md-data-table/master/dist/md-data-table.css" />
 		-->
 		<link rel="stylesheet" href="/public/js/vendor/md-data-table/dist/md-data-table.min.css" />
+		<link rel="stylesheet" href="http:////cdn.jsdelivr.net/angular.chartjs/latest/angular-chart.css" />
 		
 		<!-- Angular Material Dependencies -->
 
@@ -24,10 +25,7 @@
 
 		<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.1/angular-material.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-icons/0.6.0/angular-material-icons.min.js"></script>
-	  
-		<!-- https://github.com/daniel-nagy/md-data-table 
-		<script type="text/javascript" src="http://rawgit.com/daniel-nagy/md-data-table/master/dist/md-data-table.js"></script>
-		-->
+	 
 		
 		<script type="text/javascript" src="/public/js/vendor/md-data-table/dist/md-data-table.min.js"></script>
 	
@@ -37,11 +35,14 @@
   	
 		<script type="text/javascript" src="http://momentjs.com/downloads/moment.min.js"></script>
 		<script type="text/javascript" src="http://momentjs.com/downloads/moment-timezone-with-data-2010-2020.js"></script>
+		
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+		<script type="text/javascript" src="http://cdn.jsdelivr.net/angular.chartjs/latest/angular-chart.min.js"></script>
 
 		
 		<script>
 
-			var app = angular.module( 'SmackTalkApp' ,  [ 'md.data.table', 'ngMaterial',  'ngMdIcons', 'ngMessages' ] ); 
+			var app = angular.module( 'SmackTalkApp' ,  [ 'chart.js', 'md.data.table', 'ngMaterial',  'ngMdIcons', 'ngMessages'] ); 
 			
 			
 			var URLplayeroverallstats = [[url "Players.OverallStats"]];
@@ -64,7 +65,12 @@
 			
 			[[if .playerinfo]]
 				var playerinfo = [[.playerinfo]];
-				console.log("EVENTS", playerinfo);
+				console.log("Playerinfo", playerinfo);
+			[[end]]
+			
+			[[if .playerrating]]
+				var playerrating = [[.playerrating]];
+				console.log("playerrating", playerrating);
 			[[end]]
 		
 			[[if .events]]
@@ -101,19 +107,40 @@
 		<script type="text/javascript" src="/public/js/app/controllers/smacktalkappctrl.js"></script>
 	
 	</head>
-	<body  layout="row" ng-controller="SmackTalkAppCtrl">
+	<body  layout="row" ng-controller="SmackTalkAppCtrl" ng-Cloak>
 	
 	
 	<md-sidenav layout="column" class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
       <md-toolbar class="md-tall md-hue-2">
-        <span flex></span>
-        <div layout="column" class="md-toolbar-tools-bottom inset">
-          <user-avatar></user-avatar>
-          <span></span>
-          <div>[[.playerinfo.Firstname]] "[[.playerinfo.Nickname]]" [[.playerinfo.Surname]]</div>
-          
-		  <a href="[[url "Application.Logout"]]">logout</div></a> 
-        </div>
+        
+		
+        <div layout="column" class="md-toolbar-tools-bottom inset" >
+			<span flex></span>
+		    <div>
+			  <user-avatar></user-avatar>
+			</div>
+
+			<div><span>
+			  [[.playerinfo.Firstname]] 
+			 
+			  
+			  [[if ne .playerinfo.Nickname ""]]
+				
+			  "[[.playerinfo.Nickname]]"
+			  
+			  [[end]]
+			  
+			  
+			   [[.playerinfo.Surname]]
+				</span>
+			</div>
+			  [[if ne .playerinfo.Alignment "" ]]
+				<div ng-controller="ProfileCtrl">
+				   [[.playerinfo.Alignment]]  since [[.playerinfo.Birthdate]]  <ng-md-icon icon="info" ng-click="openProfileDialog()">HERE</ng-md-icon>
+				 </div>
+			  [[end]]
+		</div>
+
       </md-toolbar>
       <md-list>
       <md-item ng-repeat="item in menu">
@@ -127,9 +154,11 @@
           </md-item-content>
         </a>
       </md-item>
-      <md-divider></md-divider>
+
 	
 	[[if eq .playerinfo.Admin "true" ]]
+	      <md-divider></md-divider>
+	
 	 <md-subheader>Management</md-subheader>
 		
       <md-item ng-repeat="item in admin">
@@ -144,14 +173,26 @@
         </a>
       </md-item>
 	[[end]]
-
-
+      <md-divider></md-divider>
+      <md-item >
+        <a>
+          <md-item-content md-ink-ripple layout="row" layout-align="start center">
+            <div class="inset">
+              
+            </div>
+            <div class="inset"><a href="[[url "Application.Logout"]]">logout</a>
+            </div>
+          </md-item-content>
+        </a>
+      </md-item>
 
     </md-list>
     </md-sidenav>
 	
 	
 	<div ng-show="showRecordEvent" layout="column" class="relative" layout-fill >
+	
+
 	
 		<!-- RECORD EVENT -->
 		<md-toolbar ng-show="!showSearch">
@@ -166,200 +207,252 @@
 			</div>
 		</md-toolbar>
 
-		<div ng-controller="EventCtrl">
-			<md-content id="elementCtrls" ng-show="showAskQuestions" layout="column" ng-controller="GameCtrl">
-				<md-content class="md-padding" >
-				 
-					<md-autocomplete 
-						  ng-disabled="isDisabled"
-						  md-no-cache="false"
-						  md-selected-item="selectedItem"
-						  md-search-text-change="searchTextChange(searchText)"
-						  md-search-text="searchText"
-						  md-selected-item-change="selectedItemChange(item)"
-						  md-items="item in querySearch(searchText)"
-						  md-item-text="item.Name + ' (' + item.Published + ')'"
-						  md-min-length="2"
-						  md-delay="1000"
-						  md-floating-label="Choose your game(s)"
-						 >
-						<md-item-template>
-						<span md-highlight-flags="^i" md-highlight-text="searchText"> {{item.Name}} ({{item.Published}})</span>
-						</md-item-template>
-						<md-not-found >
-						  No matches found for "{{searchText}}".
-						</md-not-found>
-					</md-autocomplete>
-					
-				</md-content>
-				<md-content>
-					<md-progress-circular md-mode="indeterminate" ng-show="isLoading"></md-progress-circular>
-				</md-content>
-				<md-content >
-					<md-list>
-					  <md-list-item class="md-3-line" ng-repeat="game in gamelist">
-						<div data-ng-click="removeItem(game.UUID)" class="md-list-item-text">
-						  <font size="4" color="blue">{{game.Name}} {{game.Published}}</font>
-						</div>
+		<div ng-controller="EventCtrl" >
+			<div ng-show="showInputMenu" layout-padding layout-fill >
+				<md-card></md-card>
+				<md-card ng-click="clickMenu('SetGames')" ng-style="{'background-color':lockSetGames}">
+					Set Games
+					<div ng-repeat="game in showgames">
+											<hr>
+						&nbsp;&nbsp;{{game.Name}}
+
+					</div>
+				
+				</md-card>
+				<md-card></md-card>
+
+				<md-card ng-click="clickMenu('SetPlayers')" ng-style="{'background-color':lockSetPlayers}">
+					Set Players
+					<div ng-repeat="player in showplayers">
+										<hr>
+						&nbsp;&nbsp;{{player.Firstname}} {{player.Surname}}  ({{player.playedin.Result}} in place:{{player.playedin.Place}})
 						
-					  </md-list-item>
-					</md-list>
-				</md-content>
-			</md-content>
-			<md-divider></md-divider>
-			<md-content layout="column" ng-show="showAskQuestions" ng-controller="PlayerCtrl">
-				
-				  <md-content class="md-padding">
-				
-					  <md-autocomplete
-						  ng-disabled="isDisabled"
-						  md-no-cache="false"
-						  md-selected-item="selectedItem"
-						  md-search-text-change="searchTextChange(searchText)"
-						  md-search-text="searchText"
-						  md-selected-item-change="selectedItemChange(item)"
-						  md-items="item in querySearch(searchText)"
-						  md-item-text="item.Firstname + ' ' + item.Surname"
-						  md-min-length="2"
-						  md-delay="500"
-						  md-floating-label="Choose your players">
-						<md-item-template>
-						  <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.Firstname}} {{item.Nickname !== "" ? ('"'+item.Nickname+'"') : ''}}  {{item.Surname}}</span>
-						</md-item-template>
-						<md-not-found>
-						  No matches found for "{{searchText}}".
-						</md-not-found>
-					  </md-autocomplete>
-					  <br/>
-					
-				  </md-content>
-				 
-				<md-content>
-					<md-progress-circular md-mode="indeterminate" ng-show="isLoading"></md-progress-circular>
-				</md-content>
-				
-				<md-content>
-					<md-list>
-					  <md-list-item class="md-2-line" ng-repeat="player in playerlist">
-						<div data-ng-click="removeItem(player.UUID)" class="md-list-item-text">
-						  <font size="4" color="blue">{{player.Firstname}} {{player.Nickname !== "" ? ('"'+player.Nickname+'"') : ''}} {{player.Surname}}</font>
-						</div>
-						<div class="md-list-item-text">
-							<md-input-container>
-								<md-select  ng-init="place=player.playedin.Place" ng-change="updatePlace(player.UUID, place)" ng-model="place">
-								  <md-option   ng-repeat="place in possibleplaces" value="{{place}}">{{place}}</md-option>
-								  <!-- selected="{{ place === player.playedin.Place ? 'selected' : '' }}" -->
-								</md-select>
-							</md-input-container>
-						</div>
-						<div class="md-list-item-text">
-							<md-input-container>
-								<md-select ng-init="result=player.playedin.Result" ng-change="updateResult(player.UUID, result)"  ng-model="result">
-								  <md-option  ng-repeat="result in possibleresults" value="{{result}}">{{result}}</md-option>
-								</md-select>
-								
-							</md-input-container>
-						</div>
+					</div>
+				</md-card>
+				<md-card></md-card>
 
+				<md-card ng-click="clickMenu('SetLocation')" ng-style="{'background-color':lockSetLocation}">
+					Set Location and Time
+					<div ng-repeat="location in showlocations">
+						<hr>
+						&nbsp;&nbsp;{{location.Locationname}}
+						<hr>
+						&nbsp;&nbsp;Start time: {{startdisplay}} <br>
+						&nbsp;&nbsp;End time: {{stopdisplay}} <br>
 
-					  </md-list-item>
-					</md-list>
-				</md-content>
-			</md-content>
-			<md-divider></md-divider>
+					</div>
+				</md-card>
+
+				
+				<md-button class="md-primary"  ng-show="showRecordButton" ng-click="recordIt()" ng-model="recordButton">Record it</md-button>
 			
-			<md-content  ng-show="showAskQuestions" layout-wrap ng-controller="LocationDateTimeCtrl">
-				
-				<md-content  layout="row">
+			</div>
+	
 		
-					<md-input-container flex >
-						<label>Location: </label>
-						<input  ng-init="chosenPlace=setLastLocation()" ng-model="chosenPlace" googleplace/>
-					</md-input-container >
-					<md-button class="md-raised " ng-click="onClick()">Select</md-button>
-							
-				</md-content>
+			<div id="elementCtrls" layout="column">
+			
+			
+				<div layout="column"  ng-show="showGameSetting"  ng-controller="GameCtrl">
+					<md-content class="md-padding" >
 					 
-				<md-content layout="row" layout-fill ng-hide="hideDateTime"   layout-padding >
-						<md-content layout="column"   ng-model="start" >
+						<md-autocomplete 
+							  ng-disabled="isDisabled"
+							  md-no-cache="false"
+							  md-selected-item="selectedItem"
+							  md-search-text-change="searchTextChange(searchText)"
+							  md-search-text="searchText"
+							  md-selected-item-change="selectedItemChange(item)"
+							  md-items="item in querySearch(searchText)"
+							  md-item-text="item.Name + ' (' + item.Published + ')'"
+							  md-min-length="2"
+							  md-delay="1000"
+							  md-floating-label="Choose your game(s)"
+							 >
+							<md-item-template>
+							<span md-highlight-flags="^i" md-highlight-text="searchText"> {{item.Name}} ({{item.Published}})</span>
+							</md-item-template>
+							<md-not-found >
+							  No matches found for "{{searchText}}".
+							</md-not-found>
+						</md-autocomplete>
+						
+					</md-content>
+					<md-content>
+						<md-progress-circular md-mode="indeterminate" ng-show="isLoading"></md-progress-circular>
+					</md-content>
+					<md-content >
+						<md-list>
+						  <md-list-item class="md-3-line" ng-repeat="game in gamelist">
+							<div data-ng-click="removeItem(game.UUID)" class="md-list-item-text">
+							  <font size="4" color="blue">{{game.Name}} {{game.Published}}</font>
+							</div>
 							
-							<md-button class="{{classState}}" ng-click="lockStartTime(start)" ng-model="startButton">{{startButton}}</md-button>
-							
+						  </md-list-item>
+						</md-list>
+					</md-content>
+					<md-button  class="md-raised" ng-click="displayInputMenu('SetGames')" >Lock Game(s)</md-button>
+				</div>
 
-							<md-datepicker  ng-model="start.PickedDate" md-placeholder="Enter date"></md-datepicker>
-
-							<md-content layout="row">
-								<md-input-container >
-										<label>Time:</label>
-								</md-input-container>
-								<md-input-container >
-										<label>Hour</label>
-										<md-select  ng-change="startChange()" ng-model="start.hour">
-											<md-option   ng-repeat="hour in hours" value="{{hour}}">{{hour}}</md-option>
-										</md-select>
-								</md-input-container>
+				<div layout="column" ng-show="showPlayerSetting"  ng-controller="PlayerCtrl">
+					
+					  <md-content class="md-padding">
+					
+						  <md-autocomplete
+							  ng-disabled="isDisabled"
+							  md-no-cache="false"
+							  md-selected-item="selectedItem"
+							  md-search-text-change="searchTextChange(searchText)"
+							  md-search-text="searchText"
+							  md-selected-item-change="selectedItemChange(item)"
+							  md-items="item in querySearch(searchText)"
+							  md-item-text="item.Firstname + ' ' + item.Surname"
+							  md-min-length="2"
+							  md-delay="500"
+							  md-floating-label="Choose your players">
+							<md-item-template>
+							  <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.Firstname}} {{item.Nickname !== "" ? ('"'+item.Nickname+'"') : ''}}  {{item.Surname}}</span>
+							</md-item-template>
+							<md-not-found>
+							  No matches found for "{{searchText}}".
+							</md-not-found>
+						  </md-autocomplete>
+						  <br/>
+						
+					  </md-content>
+					 
+					<md-content>
+						<md-progress-circular md-mode="indeterminate" ng-show="isLoading"></md-progress-circular>
+					</md-content>
+					
+					<md-content>
+						<md-list>
+						  <md-list-item class="md-2-line" ng-repeat="player in playerlist">
+							<div data-ng-click="removeItem(player.UUID)" class="md-list-item-text">
+							  <font size="2" color="blue">{{player.Firstname}} {{player.Nickname !== "" ? ('"'+player.Nickname+'"') : ''}} {{player.Surname}}</font>
+							</div>
+							<div class="md-list-item-text">
 								<md-input-container>
-										<label>Minute</label>
-										<md-select ng-change="startChange()" ng-model="start.minute">
-											<md-option ng-repeat="minute in minutes" value="{{minute}}">{{minute}}</md-option>
-										</md-select>
+									<md-select  ng-init="place=player.playedin.Place" ng-change="updatePlace(player.UUID, place)" ng-model="place">
+									  <md-option   ng-repeat="place in possibleplaces" value="{{place}}">{{place}}</md-option>
+									  <!-- selected="{{ place === player.playedin.Place ? 'selected' : '' }}" -->
+									</md-select>
 								</md-input-container>
-							</md-content>
+							</div>
+							<div class="md-list-item-text">
+								<md-input-container>
+									<md-select ng-init="result=player.playedin.Result" ng-change="updateResult(player.UUID, result)"  ng-model="result">
+									  <md-option  ng-repeat="result in possibleresults" value="{{result}}">{{result}}</md-option>
+									</md-select>
+									
+								</md-input-container>
+							</div>
 
-						</md-content>
+
+						  </md-list-item>
+						</md-list>
+					</md-content>
+					<md-button  class="md-raised" ng-click="displayInputMenu('SetPlayers')" >Lock Players</md-button>
+				</div>
+
+				
+				<div  layout="column"   ng-show="showLocationSetting" ng-controller="LocationDateTimeCtrl">
+				
+				<div layout="row">
+						<div layout="column" >
 						
 
-						<md-content layout="column"  ng-hide="hideDateTime" ng-model="stop">
-								
-								<md-button class="{{stopclassState}}" ng-click="lockStopTime(stop)" ng-model="stopButton">{{stopButton}}</md-button>
-
-								<md-datepicker ng-model="stop.PickedDate" md-placeholder="Enter date"></md-datepicker>
-
-								<md-content layout="row">
-									<md-input-container >
-										<label>Time:</label>
-									</md-input-container>
-										<md-input-container >
-											<label>Hour</label>
-											<md-select  ng-model="stop.hour">
-												<md-option   ng-repeat="hour in hours" value="{{hour}}">{{hour}}</md-option>
-											</md-select>
-										</md-input-container>
+						
+							<md-card  ng-show="showLastLocation"  ng-init="getLastLocation()">
+								<label>Last location:</label>
+								<div data-ng-click="onClick('lastlocation')">
+									<font size="2" color="blue">&nbsp;&nbsp;{{lastlocationlist.Locationname}}</font>
+								</div>
+							</md-card>
+							
+							<md-card  ng-show="showNewLocation" >
+								<label>or New location:</label>
+								<md-input-container  >
+									<input   ng-model="chosenPlace" googleplace/>
 									
+								</md-input-container >
+								<md-button   class="md-raised" ng-click="onClick('newlocation')" >Lock New Location</md-button>
+								
+							</md-card>
+							
+						</div>
+						<div layout="column">
+							<md-card layout-align="center center"  ng-show="showChosenLocation" >
+								<label>Location chosen:</label>
+								{{displayLocation}}
+							</md-card>
+							
+													<md-card  ng-show="showLockLocationTime">
+								<md-button   class="md-raised" ng-click="onClick('reset');" >Reset Location</md-button>
+								
+								<md-button  class="md-raised" ng-click="displayInputMenu('SetLocation')" >Lock Location and time</md-button>
+							</md-card>
+							
+							
+								
+						</div>
+					</div>
+						
+						<div layout="column" ng-show="showDateTime"  style=" background-color: #b0c4de;">
+							<md-card  ng-model="start">
+									<label>Start Time:</label>
+									<md-datepicker  ng-change="timeschanged('START')"   ng-model="start.PickedDate" md-placeholder="Enter date"></md-datepicker>
+
+									<md-content layout="row">
+										<md-input-container >
+												<label>Time:</label>
+										</md-input-container>
+										<md-input-container >
+												<label>Hour</label>
+												<md-select  ng-change="timeschanged('START')"   ng-change="startChange()" ng-model="start.hour">
+													<md-option   ng-repeat="hour in hours" value="{{hour}}">{{hour}}</md-option>
+												</md-select>
+										</md-input-container>
 										<md-input-container>
-											<label>Minute</label>
-											<md-select ng-model="stop.minute">
-												<md-option ng-repeat="minute in minutes" value="{{minute}}">{{minute}}</md-option>
-											</md-select>
-									</md-input-container>
-								</md-content>
-						</md-content>
-				</md-content>
-			<!--END OF QUESTIONS -->
-			</md-content>
-			
-			
+												<label>Minute</label>
+												<md-select  ng-change="timeschanged('START')"  ng-model="start.minute">
+													<md-option ng-repeat="minute in minutes" value="{{minute}}">{{minute}}</md-option>
+												</md-select>
+										</md-input-container>
+									</md-content>
+							</md-card>
 
-			<md-content  ng-show="showPassedChecks">
-				<u>Games played:</u> 
-				<div ng-repeat="game in showgames">
-					{{game.Name}}
-				</div><br>
-				<u>Players involved:</u>
-				<div ng-repeat="player in showplayers">
-					{{player.Firstname}} {{player.Surname}}  ({{player.playedin.Result}} in place:{{player.playedin.Place}})
-				</div><br>
-				
-				at
-				<div ng-repeat="location in showlocations">
-					{{location.Locationname}}
-				</div><br>
-				Start time: {{showevent.start}} <br>
-				End time: {{showevent.end}} <br>
+							<md-card   ng-model="stop" >
+										<label>Stop Time:</label>
+										<md-datepicker  ng-change="timeschanged('STOP')"  ng-model="stop.PickedDate" md-placeholder="Enter date"></md-datepicker>
 
-				<md-button class="md-primary"  ng-click="recordIt()" ng-model="recordButton">Record it</md-button>
-				<md-button class="md-primary"  ng-click="goback()" ng-model="recordButton">Redo</md-button>
-			</md-content>
+										<md-content layout="row">
+											<md-input-container >
+												<label>Time:</label>
+											</md-input-container>
+												<md-input-container >
+													<label>Hour</label>
+													<md-select  ng-change="timeschanged('STOP')"   ng-model="stop.hour">
+														<md-option   ng-repeat="hour in hours" value="{{hour}}">{{hour}}</md-option>
+													</md-select>
+												</md-input-container>
+											
+												<md-input-container>
+													<label>Minute</label>
+													<md-select  ng-change="timeschanged('STOP')"  ng-model="stop.minute">
+														<md-option ng-repeat="minute in minutes" value="{{minute}}">{{minute}}</md-option>
+													</md-select>
+											</md-input-container>
+										</md-content>
+							</md-card>
+							
+						</div>
+						<div>
+							
+						</div>
+				</div>
+					
+				</div>
+			</div>
 		</div>
 	</div>
 	
@@ -385,10 +478,11 @@
 							<thead md-order="query.order" md-trigger="onOrderChange">
 							  <tr>
 								<th name="Opponent"  order-by="name"></th>
-								<th name="Won"  order-by="beatthem"></th>
-								<th name="Lost"  order-by="beatenbythem"></th>
-								
-
+								<th name="Beat Them"  order-by="prettybeatthem"></th>
+								<th name="Gotten Beaten"  order-by="prettybeatenbythem"></th>
+								<th name="Rating"  order-by="prettyrating"></th>
+								<th name="RatingDeviation"  order-by="prettyratingdeviation"></th>
+								<th name="Volatility"  order-by="prettyvolatility"></th>
 								
 							  </tr>
 							</thead>
@@ -397,9 +491,11 @@
 							  ng-repeat="player in showplayers | orderBy: query.order | limitTo: query.limit: (query.page - 1) * query.limit">
 							  
 								<td><a href="{{URLappstart}}/start/{{player.uuid}}">{{player.name}}<a></td>
-								<td>{{player.beatthem}}</td>
-								<td>{{player.beatenbythem}}</td>
-								
+								<td>{{player.prettybeatthem}}</td>
+								<td>{{player.prettybeatenbythem}}</td>
+								<td>{{player.prettyrating}}</td>
+								<td>{{player.prettyratingdeviation}}</td>
+								<td>{{player.prettyvolatility}}</td>
 
 							  </tr>
 							</tbody>
@@ -542,122 +638,45 @@
 		<!-- TABS -->
         <md-tabs  md-stretch-tabs md-dynamic-height md-border-bottom class="md-primary" md-selected="data.selectedIndex">
 			<md-tab label="Profile" id="tab1" aria-controls="tab1-content"  >	  
-				<div ng-controller="OverAllStatsCtrl" ng-model="overallstats" layout-padding  layout="column"   >
-				
-
-					<md-card >
-						Ranking: 2349
-						RD: 340
-					</md-card>
-				
-					<md-content layout-padding  layout="row" >
-
-					<md-card>
-						<table border="0" style='text-align: center; vertical-align: middle;'>
-							<tr>
-								<td><b>{{overallstats.eventsinfo.title}}</b></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.eventsinfo.total}}</b></td>							
-							</tr>
-							<tr>
-								<td><hr></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.playersinfo.title}}</b></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.playersinfo.total}}</b></td>							
-							</tr>
-							<tr>
-								<td><hr></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.gamesinfo.title}}</b></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.gamesinfo.total}}</b></td>							
-							</tr>
-						
-						</table>
+				<md-content ng-controller="OverAllStatsCtrl" ng-model="overallstats"  layout-wrap  style="padding-bottom: 32px;" layout="row" >
 					
-					</md-card>
-					<md-card>
-						<table border="0" style='text-align: center; vertical-align: middle;'>
-							<tr>
-								<td><b>{{overallstats.stats.won.title}}</b></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.stats.won.total}}</b></td>							
-							</tr>
-							<tr>
-								<td><hr></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.stats.lost.title}}</b></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.stats.lost.total}}</b></td>							
-							</tr>
-							<tr>
-								<td><hr></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.stats.other.title}}</b></td>							
-							</tr>
-							<tr>
-								<td><b>{{overallstats.stats.other.total}}</b></td>							
-							</tr>
+					<md-whiteframe style="background-color: #E3F2FD;"  class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+						<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Rating</h3><hr><h2 class=".md-display-2">{{overallstats.playersrating.rating}}</h2></span>
+					  </md-whiteframe>
+						  <md-whiteframe style="background-color: #E3F2FD;"  class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Rating Deviation</h3><hr><h2 class=".md-display-2">{{overallstats.playersrating.ratingdeviation}}</h2></span>
+					  </md-whiteframe>
+						  <md-whiteframe style="background-color: #E3F2FD;"  class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Volatility</h3><hr><h2 class=".md-display-2">{{overallstats.playersrating.volatility}}</h2></span>
+					  </md-whiteframe>
 						
-						</table>
-					
-					</md-card>
-					<md-card  ng-controller="ProfileCtrl"  ng-submit="update(projectForm);">
-						<form   name="projectForm">
-								 <md-input-container>
-									<label>Nickname</label>
-									<input   style="width:150px" name="nickname" ng-model="project.nickname">
-									<!--
-									<div ng-messages="projectForm.nickname.$error"> 
-									  <div ng-message="md-maxlength">The name has to be less than 30 characters long.</div>
-									</div>
-									-->
-
-								 </md-input-container>
-								 <md-input-container>
-									<label>Birth Year</label>
-									<input  type="number" style="width:80px" name="birthdate" ng-model="project.birthdate" min="1900" max="2999">
-
-									<!--
-									<div ng-messages="projectForm.birthdate.$error">
-									  <div ng-message="min">There is no way you were born before 1900... unless. Time traveler?</div>
-									  <div ng-message="max">There is no way you were born after 2999... unless. Time traveler?</div>
-									</div>
-									-->
-
-								  </md-input-container>
-								  
-								  
-								  <md-input-container>
-									<label>Alignment</label>
-									<md-select style="width:170px" name="alignment" ng-model="project.alignment" placeholder="Alignment">
-											<md-option ng-repeat="alignment in alignments" value="{{alignment}}">{{alignment}}</md-option>
-									</md-select>
-								  
-
-								  </md-input-container>
-								  <md-button  ng-show="somethingchanged(projectForm)" class="md-raised md-primary" name="updateButton">Update Profile</md-button>
-						</form>
-					</md-card>
-					</md-content>
-
-				</div>
+						
+						<md-whiteframe style="background-color: #BBDEFB;" class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Events<br>Played</h3><hr><h2 class=".md-display-2">{{overallstats.eventsinfo.total}}</h2></span>
+					  </md-whiteframe>
+						  <md-whiteframe style="background-color: #BBDEFB;" class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Unique<br>Opponents</h3><hr><h2 class=".md-display-2">{{overallstats.playersinfo.total}}</h2></span>
+					  </md-whiteframe>
+						  <md-whiteframe style="background-color: #BBDEFB;" class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Unique<br>Games Played</h3><hr><h2 class=".md-display-2">{{overallstats.gamesinfo.total}}</h2></span>
+					  </md-whiteframe>
+					  
+						<md-whiteframe style="background-color: #90CAF9;"  class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Won/Demolish</h3><hr><h2 class=".md-display-2">{{overallstats.stats.won.total}}</h2></span>
+					  </md-whiteframe>
+						  <md-whiteframe style="background-color: #90CAF9;"  class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Lost/Skunk</h3><hr><h2 class=".md-display-2">{{overallstats.stats.lost.total}}</h2></span>
+					  </md-whiteframe>
+						  <md-whiteframe style="background-color: #90CAF9;"  class="md-whiteframe-5dp" flex="30" layout layout-align="center center">
+							<span style=" vertical-align: middle; text-align: center;"><h3 class=".md-display-1">Tie/Drop/Quit</h3><hr><h2 class=".md-display-2">{{overallstats.stats.other.total}}</h2></span>
+					  </md-whiteframe>
+				</md-content>
 		  
 			</md-tab>
 			
 			<md-tab label="Stats" id="tab2" aria-controls="tab2-content">
 			  
-				<md-content  layout-wrap  layout-padding style="background-color: #b4dcb3;" layout="row" ng-controller="CoolStats" ng-model="stats" id="popupContainer" >
+				<md-content  layout-wrap  layout-padding  layout="row" ng-controller="CoolStats" ng-model="stats" id="popupContainer" >
 
 						<md-button class="md-primary md-raised" ng-click="showStats($event,'nemeses')" flex flex-md="100">
 						  Nemeses?
@@ -667,6 +686,9 @@
 						</md-button>
 						<md-button class="md-primary md-raised" ng-click="showAdvanced($event)" flex flex-md="100">
 						  Top 3 Games
+						</md-button>
+						<md-button class="md-primary md-raised" ng-click="showRatingHistory($event)" flex flex-md="100">
+						  Rating History
 						</md-button>
 				
 				</md-content>

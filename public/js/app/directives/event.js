@@ -2,12 +2,15 @@ app.directive('googleplace' , ['event' , '$http',  function(event, $http) {
     return {
         require: 'ngModel',
         link: function(scope, element, attrs, model) {
+			
             var options = {
                 types: []
             };
+			
             scope.gPlace = new google.maps.places.Autocomplete(element[0], options);
-
+			
             google.maps.event.addListener(scope.gPlace, 'place_changed', function() {
+
                 scope.$apply(function() {
 					var place = scope.gPlace.getPlace();
 					
@@ -20,11 +23,12 @@ app.directive('googleplace' , ['event' , '$http',  function(event, $http) {
 
 					
 					event.addList(listObj, "locationList" );
-					
+
                     model.$setViewValue(element.val()); 
 					
                 });
             });
+
         }
     };
 }]);
@@ -37,7 +41,7 @@ app.factory('event', function () {
 	
 	
     // Shared Models
-	var locationList = [1];
+	var locationList = [];
 	var playerList = [];
 	var gameList = [];
 	var playedinList = [];

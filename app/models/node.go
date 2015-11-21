@@ -34,6 +34,7 @@ type Glicko2 struct {
 	RatingDeviation string `json:"RatingDeviation"`
 	Volatility      string `json:"Volatility"`
 	NumResults      string `json:"NumResults"`
+	Date			string `json:"Date"`
 }
 
 type Gamesifter struct {
@@ -67,6 +68,7 @@ type Game struct {
 type Competitor struct {
 	Player Player
 	Result Played_In
+	Rating Glicko2
 }
 
 type ByPlace []Competitor
@@ -166,17 +168,21 @@ func getEventName() string {
 func (n *Glicko2) Create() neoism.Props {
 	revel.TRACE.Println("Creating  ", reflect.TypeOf(n))
 	n.UUID = getUUID()
+	
+	if (n.Rating =="" ) {
 	n.Rating = "1500"
 	n.RatingDeviation = "350"
 	n.Volatility = "0.06"
 	n.NumResults = "0"
-
+	n.Date = "0"
+}
 	return neoism.Props{
 		"UUID":            n.UUID,
 		"Rating":          n.Rating,
 		"RatingDeviation": n.RatingDeviation,
 		"Volatility":      n.Volatility,
 		"NumResults":      n.NumResults,
+		"Date":				n.Date,
 	}
 }
 

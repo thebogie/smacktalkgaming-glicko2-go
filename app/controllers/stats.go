@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	//"encoding/json"
+	"encoding/json"
 	//"fmt"
 	"github.com/revel/revel"
 	//"github.com/revel/revel/cache"
@@ -21,6 +21,35 @@ type Stats struct {
 //GrabNemesis - top 3 competitors that player has most losses and
 type GrabNemesisCargo struct {
 	Players []models.Player
+}
+
+func (c Stats) GetGoogleTimeZone() revel.Result {
+
+	retStatus := make(map[string]string)
+	retStatus["status"] = "FAIL"
+
+	revel.TRACE.Println("GOOGLE TIME ZONE  POST REQUEST")
+	type cargoObj struct {
+		Lat       string `json:"Lat"`
+		Lng       string `json:"Lng"`
+		Timestamp string `json:"Timestamp"`
+	}
+
+	var cargo cargoObj
+	revel.TRACE.Println("Body", c.Request.Body)
+	revel.TRACE.Println("params", c.Params)
+
+	err := json.NewDecoder(c.Request.Body).Decode(&cargo)
+	if err != nil {
+		//panic(err)
+	}
+	retval := new(models.GoogleAPI).GetTimeZone(cargo.Lat, cargo.Lng)
+	retStatus["status"] = "PASS"
+	retStatus["timezone"] = retval
+
+	revel.TRACE.Println("cargo:", cargo, retStatus)
+
+	return c.RenderJson(retStatus)
 }
 
 func (c Stats) Grab(playeruuid, action string) revel.Result {

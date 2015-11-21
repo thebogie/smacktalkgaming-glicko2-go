@@ -1,5 +1,8 @@
 package controllers
 
+//UUIDnodeA:2e91f5eb-c52d-47a9-b2bd-d0280fbf7f84 - olivia
+//UUIDnodeB:b496aad9-10eb-4370-b358-ba1fe4f8f184 - olivias rating
+//6fefa268-17cd-4b77-9621-c599a3274bd0
 import (
 	"github.com/revel/revel"
 	"math"
@@ -183,8 +186,22 @@ func (r *Rating) convertToFloats(node models.Glicko2, playeruuid string, playern
 	r.volatility, _ = strconv.ParseFloat(node.Volatility, 64)
 }
 
-func (r *Rating) finaliseRating() (node models.Glicko2) {
-	revel.TRACE.Println("ITEMS", r)
+func (r *Rating) finaliseRating() (node models.Glicko2, prevnode models.Glicko2) {
+	//revel.TRACE.Println("ITEMS", r)
+
+	/*
+		prevnode.UUID = "0"
+		prevnode.Rating = strconv.FormatFloat(r.ratingcalc.convertRatingToOriginalGlickoScale(r.rating), 'f', 10, 64)
+		prevnode.RatingDeviation = strconv.FormatFloat(r.ratingcalc.convertRatingDeviationToOriginalGlickoScale(r.ratingDeviation), 'f', 10, 64)
+		prevnode.Volatility = strconv.FormatFloat(r.volatility, 'f', 10, 64)
+		prevnode.NumResults = strconv.Itoa(r.numberOfResults)
+	*/
+
+	prevnode.UUID = "0"
+	prevnode.Rating = strconv.FormatFloat(r.rating, 'f', 10, 64)
+	prevnode.RatingDeviation = strconv.FormatFloat(r.ratingDeviation, 'f', 10, 64)
+	prevnode.Volatility = strconv.FormatFloat(r.volatility, 'f', 10, 64)
+	prevnode.NumResults = strconv.Itoa(r.numberOfResults)
 
 	r.rating = r.ratingcalc.convertRatingToOriginalGlickoScale(r.workingRating)
 	r.ratingDeviation = r.ratingcalc.convertRatingDeviationToOriginalGlickoScale(r.workingRatingDeviation)
@@ -194,14 +211,15 @@ func (r *Rating) finaliseRating() (node models.Glicko2) {
 	node.Rating = strconv.FormatFloat(r.rating, 'f', 10, 64)
 	node.RatingDeviation = strconv.FormatFloat(r.ratingDeviation, 'f', 10, 64)
 	node.Volatility = strconv.FormatFloat(r.volatility, 'f', 10, 64)
+	node.NumResults = strconv.Itoa(r.numberOfResults)
 
 	r.workingVolatility = 0
 	r.workingRating = 0
 	r.workingRatingDeviation = 0
 
-	revel.TRACE.Println("ITEMS AFTER", r)
+	revel.TRACE.Println("NODE:", node, "PREVNODE:", prevnode)
 
-	return node
+	return node, prevnode
 
 }
 
@@ -286,10 +304,12 @@ type RatingPeriodResults struct {
 	results []Result
 }
 
-func (rp *RatingPeriodResults) addResult(winner Rating, loser Rating) {
+func (rp *RatingPeriodResults) addResult(winner Rating, loser Rating, isDraw bool) {
 
 	result := new(Result)
 	result.init(winner, loser)
+
+	result.isDraw = isDraw
 
 	rp.results = append(rp.results, *result)
 }
@@ -300,6 +320,24 @@ type Glicko2Rating struct {
 	Application
 }
 
+func afterPeriodNonCompeteDevUpdate(ratinguuid string, rd string, vol string) {
+	//TODO: make this rc common for all functionsr
+	////revel.TRACE.Println("Org RD , rd")
+	update := Rating{}
+	var rc = RatingCalculator{tau: DEFAULT_TAU, defaultVolatility: DEFAULT_VOLATILITY}
+
+	update.ratingDeviation, _ = strconv.ParseFloat(rd, 64)
+	update.volatility, _ = strconv.ParseFloat(vol, 64)
+
+	update.ratingDeviation = rc.convertRatingDeviationToOriginalGlickoScale(rc.calculateNewRD(update.getGlicko2RatingDeviation(), update.volatility))
+
+	err := new(models.QueryObj).SetValue("Glicko2", ratinguuid, "RatingDeviation", strconv.FormatFloat(update.ratingDeviation, 'f', 10, 64))
+	if err != nil {
+		revel.ERROR.Println("SETVALUE FAILED FOR NONCOMPETEDEVUPDATE")
+	}
+
+}
+
 //TODO: need to optimize. Lots of loops becuase trying to keep the same language
 // as the java version to get glicko2 working
 func afterEventRankingUpdate(UUIDEvt string) {
@@ -308,7 +346,8 @@ func afterEventRankingUpdate(UUIDEvt string) {
 
 	finalize := []Rating{}
 
-	revel.TRACE.Println("eventresults", eventresults)
+	eventdate := new(models.QueryObj).GetValue("Event", UUIDEvt, "Stop")
+	revel.TRACE.Println("EVENTDATE:", eventdate)
 
 	for index, c := range eventresults {
 
@@ -332,25 +371,55 @@ func afterEventRankingUpdate(UUIDEvt string) {
 				loser.ratingcalc = rc
 				winner.ratingcalc = rc
 
+				ratinglocked := false
+				isdraw := false
+
 				mainplayerPlace, _ := strconv.Atoi(c.Result.Place)
 				otherplayerPlace, _ := strconv.Atoi(eventresults[i].Result.Place)
-				if mainplayerPlace < otherplayerPlace {
+
+				if mainplayerPlace == 0 || otherplayerPlace == 0 {
+
+					//no place set, auto fail
 
 					winner = mainplayer
 					loser = opponent
 
-					revel.TRACE.Println("WINNER = MAINPLAYER", c.Player.Firstname)
-					revel.TRACE.Println("LOSER = OTHERPLAYER", opponent.playerName)
+					ratinglocked = true
+					if mainplayerPlace == 0 && otherplayerPlace == 0 {
+						isdraw = true
 
-				} else {
-					winner = opponent
-					loser = mainplayer
+					} else {
 
-					revel.TRACE.Println("WINNER = OHTERPLAYER", opponent.playerName)
-					revel.TRACE.Println("LOSER = MAINPLAYER", c.Player.Firstname)
+						if mainplayerPlace == 0 {
+							winner = opponent
+							loser = mainplayer
+						}
+
+					}
 
 				}
-				resultperiod.addResult(winner, loser)
+
+				if !ratinglocked {
+
+					if mainplayerPlace <= otherplayerPlace {
+
+						winner = mainplayer
+						loser = opponent
+						if mainplayerPlace == otherplayerPlace {
+
+							isdraw = true
+						}
+					} else {
+						winner = opponent
+						loser = mainplayer
+
+					}
+
+				}
+
+				revel.TRACE.Println("WINNER = ", winner.playerName, "LOSER = ", loser.playerName, "ISDRAW?", isdraw)
+
+				resultperiod.addResult(winner, loser, isdraw)
 			}
 
 		}
@@ -415,14 +484,20 @@ func afterEventRankingUpdate(UUIDEvt string) {
 		finalize = append(finalize, mainplayer)
 
 	}
+	revel.TRACE.Println("FINALIZE:", finalize)
 
-	updatedratings := []models.Glicko2{}
+	//updatedratings := []models.Glicko2{}
 	for _, final := range finalize {
-
-		updatedratings = append(updatedratings, final.finaliseRating())
+		node, prevnode := final.finaliseRating()
+		revel.TRACE.Println("FINAL:", final, "NODE:", node, "PREVNODE:", prevnode)
+		// create a prev.. if that prev already exists then update nothing
+		_, existed := new(models.QueryObj).CreateGlicko2PrevRating(node.UUID, prevnode, eventdate)
+		if !existed {
+			new(models.QueryObj).SetGlicko2Rating(node)
+		}
 
 	}
 
-	revel.TRACE.Println("final results", updatedratings)
+	////revel.TRACE.Println("final results", updatedratings)
 
 }

@@ -87,6 +87,12 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 			AND b.UUID = {UUIDnodeB} 
 			CREATE (a)-[r:PLAYED_IN {relateProps}]->(b) RETURN r
 		`)
+	case *Rating_Glicko2_prev:
+		statements = append(statements, `
+			match a, b where a.UUID ={UUIDnodeA} 
+			AND b.UUID = {UUIDnodeB} 
+			CREATE (a)-[r:RATING_GLICKO2_PREV {relateProps}]->(b) RETURN r
+		`)
 	case *Rating_Glicko2:
 		statements = append(statements, `
 			match a, b where a.UUID ={UUIDnodeA} 
@@ -119,7 +125,7 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 		revel.TRACE.Println("NODE TYPE", t)
 	}
 
-	revel.TRACE.Println("bndleprops:", bundleProps)
+	//revel.TRACE.Println("bndleprops:", bundleProps)
 
 	for _, statement := range statements {
 
@@ -137,7 +143,7 @@ func (neo *Neo4jObj) CreateRelate(UUIDnodeA string, UUIDnodeB string, relate Rel
 		neo.dbc.Session.Log = false
 		neo.dbc.Cypher(&cq)
 
-		revel.TRACE.Println("RES: ", res1)
+		//revel.TRACE.Println("RES: ", res1)
 	}
 	return UUID
 }

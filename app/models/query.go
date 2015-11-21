@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	//"time"
 )
 
 type QueryObj struct {
@@ -31,6 +32,30 @@ func query(load *neoism.CypherQuery) {
 
 	//revel.TRACE.Println("AFTER CYPHER", load.Result)
 
+}
+
+func (qobj *QueryObj) GetAllEventUUID() (retval []string) {
+
+	//format of cypher return
+	res := []struct {
+		EventUUID string `json:"UUID"`
+	}{}
+	//res := []map[string]map[string]map[string]interface{}{}
+
+	prop := neoism.Props{}
+
+	cq := neoism.CypherQuery{
+		Statement:  `match (e:Event) return e.UUID as UUID`,
+		Parameters: prop,
+		Result:     &res,
+	}
+	query(&cq)
+
+	for _, v := range res {
+		retval = append(retval, v.EventUUID)
+	}
+
+	return retval
 }
 
 func (qobj *QueryObj) TotalNumberOfGamesPlayed(UUID string) string {
@@ -56,7 +81,7 @@ func (qobj *QueryObj) TotalNumberOfGamesPlayed(UUID string) string {
 	query(&cq)
 
 	r := res[0]
-	//revel.TRACE.Println("RELFECT:", reflect.TypeOf(r.Rel_count))
+
 	return strconv.Itoa(r.Rel_count)
 
 }
@@ -616,29 +641,28 @@ func (qobj *QueryObj) GetValue(nodeType string, UUID string, key string) string 
 		// `json:` tags matches column names in query
 		Result string `json:"Result"`
 	}{}
-	prop = neoism.Props{"UUID": UUID, "NODE": nodeType, "KEY": key}
+	prop = neoism.Props{"UUID": UUID, "NODELABEL": nodeType, "KEY": key}
+
+	statementStr := `MATCH (n:` + nodeType + `{ UUID:"` + UUID + `"}) return n.` + key + ` as Result `
 
 	cq := neoism.CypherQuery{
-		Statement: `
-			start n=node(*)
-			MATCH (n:{NODE} { UUID:{UUID} })
-			return n.{KEY} as Result
-			`,
+		Statement:  statementStr,
 		Parameters: prop,
 		Result:     &res,
 	}
 
 	query(&cq)
 
-	//for _, node := range res {
-	//retval = node
-	//}
+	for _, v := range res {
+		retval = v.Result
+	}
+
 	return retval
 }
 
 func (qobj *QueryObj) SetValue(nodeType string, UUID string, key string, value string) error {
 	var prop neoism.Props
-	revel.TRACE.Println("SetValue:", nodeType, UUID, key, value)
+	//revel.TRACE.Println("SetValue:", nodeType, UUID, key, value)
 
 	res := []struct {
 		// `json:` tags matches column names in query
@@ -662,6 +686,18 @@ func (qobj *QueryObj) SetValue(nodeType string, UUID string, key string, value s
 		}
 	}
 	return nil
+}
+
+func (qobj *QueryObj) GetAllRatings() (players []Player, ratings []Glicko2) {
+
+	players = qobj.GetAllPlayers()
+
+	for _, player := range players {
+		ratings = append(ratings, qobj.GetPlayerGlicko2Rating(player.UUID))
+
+	}
+
+	return players, ratings
 }
 
 func (qobj *QueryObj) GetAllPlayers() []Player {
@@ -748,6 +784,51 @@ func (qobj *QueryObj) GetAllGames() []Game {
 
 }
 
+func (qobj *QueryObj) GetLastLocationNode(playeruuid string) (retval Location) {
+
+	res := []map[string]map[string]map[string]interface{}{}
+
+	prop := neoism.Props{"UUID": playeruuid}
+
+	cq := neoism.CypherQuery{
+		Statement:  `MATCH (n:Player {UUID:{UUID}})-[r:LAST_EVENT]-(m), m-[rr:PLAYED_AT]-(l) return l`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	//reflect the struct instead of writing it out eveytime.
+	//assume: all strings
+	for _, v := range res {
+		revel.TRACE.Println("VTYPE", v, reflect.TypeOf(v))
+
+		for ukey, u := range v {
+			revel.TRACE.Println("ukey", ukey, u)
+			if ukey == "l" {
+				for wkey, w := range u {
+					revel.TRACE.Println("wkey", wkey, w)
+					if wkey == "data" {
+
+						retval = Location{}
+						for key, value := range w {
+							element := reflect.ValueOf(&retval).Elem().FieldByName(key)
+							if element.IsValid() {
+								element.SetString(value.(string))
+							}
+
+						}
+
+					}
+
+				}
+			}
+		}
+	}
+
+	return retval
+}
+
 func (qobj *QueryObj) GetLocation(evt Event) string {
 
 	res := []Location{}
@@ -819,10 +900,7 @@ func (qobj *QueryObj) GetPlayerStatsByEvent(eventUUID string) (retval []Player, 
 	prop := neoism.Props{"UUID": eventUUID}
 
 	cq := neoism.CypherQuery{
-		Statement: `
-			MATCH (p:Event { UUID:{UUID} })-[r:PLAYED_WITH]->(n)
-			return 	n
-			`,
+		Statement:  `MATCH (p:Event { UUID:{UUID} })<-[rr:PLAYED_IN]-(n) return n, rr`,
 		Parameters: prop,
 		Result:     &res,
 	}
@@ -831,13 +909,16 @@ func (qobj *QueryObj) GetPlayerStatsByEvent(eventUUID string) (retval []Player, 
 
 	//reflect the struct instead of writing it out eveytime.
 	//assume: all strings
+	//revel.TRACE.Println("RES", res)
 	for _, v := range res {
-		//revel.TRACE.Println("TYPE", k, reflect.TypeOf(v))
+		//revel.TRACE.Println("V : TYPE", v, reflect.TypeOf(v))
 		for _, u := range v {
-			for s, t := range u {
-				if s == "data" {
+			//revel.TRACE.Println("UKEY:U", ukey, u)
+			for skey, s := range u {
+				//revel.TRACE.Println("SKEY:S", skey, s)
+				if skey == "data" {
 					newevent := Player{}
-					for key, value := range t {
+					for key, value := range s {
 
 						v := reflect.ValueOf(&newevent).Elem().FieldByName(key)
 						if v.IsValid() {
@@ -846,6 +927,18 @@ func (qobj *QueryObj) GetPlayerStatsByEvent(eventUUID string) (retval []Player, 
 
 					}
 					retval = append(retval, newevent)
+				}
+				if skey == "rr" {
+					newplayedin := Played_In{}
+					for key, value := range s {
+
+						v := reflect.ValueOf(&newplayedin).Elem().FieldByName(key)
+						if v.IsValid() {
+							v.SetString(value.(string))
+						}
+
+					}
+					results = append(results, newplayedin)
 				}
 
 			}
@@ -901,6 +994,74 @@ func (qobj *QueryObj) GetRatingByUUID(ratingUUID string) (retval Glicko2) {
 	return retval
 }
 
+func (qobj *QueryObj) SetGlicko2Rating(node Glicko2) {
+
+	res := []map[string]map[string]map[string]interface{}{}
+
+	//revel.TRACE.Println("SETGLICKO2", node)
+
+	prop := neoism.Props{"UUID": node.UUID,
+		"NumResults":      node.NumResults,
+		"Rating":          node.Rating,
+		"RatingDeviation": node.RatingDeviation,
+		"Volatility":      node.Volatility}
+
+	cq := neoism.CypherQuery{
+		Statement: `MATCH (n:Glicko2 { UUID:{UUID} }) ` +
+			`set n.NumResults={NumResults}, ` +
+			` n.Rating={Rating}, ` +
+			` n.RatingDeviation={RatingDeviation}, ` +
+			` n.Volatility={Volatility} ` +
+			`return n`,
+		Parameters: prop,
+		Result:     &res,
+	}
+	query(&cq)
+
+}
+
+func (qobj *QueryObj) CreateGlicko2PrevRating(ratinguuid string, node Glicko2, date string) (retval string, nodeexists bool) {
+
+	nodeexists = false
+
+	//does the node already exist?
+	res := []struct {
+		// `json:` tags matches column names in query
+		Date string `json:"m.Date"`
+		UUID string `json:"m.UUID"`
+	}{}
+
+	prop := neoism.Props{"RATINGUUID": ratinguuid}
+
+	cq := neoism.CypherQuery{
+		Statement:  `MATCH (n:Glicko2 {UUID:{RATINGUUID}})-[r:RATING_GLICKO2_PREV]->(m) return m.Date, m.UUID`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	revel.TRACE.Println("res", res)
+
+	for _, value := range res {
+		if value.Date == date {
+			nodeexists = true
+			retval = value.UUID
+		}
+	}
+
+	if !nodeexists {
+		neo := new(Neo4jObj)
+		neo.init()
+
+		node.Date = date
+		retval = neo.Create(&node)
+		neo.CreateRelate(ratinguuid, retval, &Rating_Glicko2_prev{})
+	}
+	return retval, nodeexists
+
+}
+
 //return competitors in placed order!
 func (qobj *QueryObj) GetPlayerGlicko2Rating(playerUUID string) (retval Glicko2) {
 
@@ -916,7 +1077,7 @@ func (qobj *QueryObj) GetPlayerGlicko2Rating(playerUUID string) (retval Glicko2)
 
 	query(&cq)
 
-	revel.TRACE.Println("did we find a rating?", res)
+	//revel.TRACE.Println("did we find a rating?", res)
 
 	if len(res) <= 0 {
 		//TODO too low level?
@@ -962,30 +1123,34 @@ func (qobj *QueryObj) GetPlayerGlicko2Rating(playerUUID string) (retval Glicko2)
 }
 
 //return competitors in placed order!
+//assumption: the rating node exists
 func (qobj *QueryObj) GetCompetitorsByEvent(eventUUID string) (retval []Competitor) {
 
 	//format of cypher return
 	res := []map[string]map[string]map[string]interface{}{}
-	//player := Player{}
-	//playedin := Played_In{}
 
 	prop := neoism.Props{"UUID": eventUUID}
 
 	cq := neoism.CypherQuery{
-		Statement:  `MATCH (e:Event { UUID:{UUID} })-[r:INCLUDED]->(n), (n)-[p:PLAYED_IN]->(e) return n, p`,
+		Statement: `MATCH (e:Event { UUID:{UUID} })
+					-[r:INCLUDED]->(n), 
+					(n)-[rr:RATING_GLICKO2]->(rating),
+					(n)-[p:PLAYED_IN]->(e)
+					return n, p, rating`,
 		Parameters: prop,
 		Result:     &res,
 	}
 
 	query(&cq)
-
+	//revel.TRACE.Println("RES", res)
 	//reflect the struct instead of writing it out eveytime.
 	//assume: all strings
 	for _, v := range res {
-		//revel.TRACE.Println("VTYPE", vkey, v, reflect.TypeOf(v))
+		//revel.TRACE.Println("v, VTYPE", v, reflect.TypeOf(v))
 		newcompetitor := Competitor{}
-		for ukey, u := range v {
 
+		for ukey, u := range v {
+			//revel.TRACE.Println("ukey,u", ukey, u)
 			if ukey == "n" {
 				for wkey, w := range u {
 					if wkey == "data" {
@@ -1024,12 +1189,41 @@ func (qobj *QueryObj) GetCompetitorsByEvent(eventUUID string) (retval []Competit
 
 				}
 			}
+			if ukey == "rating" {
+				for wkey, w := range u {
+					if wkey == "data" {
+						newobj := Glicko2{}
+
+						for key, value := range w {
+
+							element := reflect.ValueOf(&newobj).Elem().FieldByName(key)
+
+							if element.IsValid() {
+								element.SetString(value.(string))
+							}
+
+						}
+
+						newcompetitor.Rating = newobj
+
+					}
+
+				}
+			}
+
 		}
+
+		//revel.TRACE.Println("NewCompetitor Rating", newcompetitor.Rating)
+
+		//if !ratingfound {
+		//	newcompetitor.Rating = new(QueryObj).GetPlayerGlicko2Rating(newcompetitor.Player.UUID)
+		//}
 
 		retval = append(retval, newcompetitor)
 
 	}
 	sort.Sort(ByPlace(retval))
+
 	return retval
 
 }
@@ -1055,7 +1249,6 @@ func (qobj *QueryObj) GetGamesByEvent(eventUUID string) (retval []Game) {
 
 	query(&cq)
 
-	//revel.TRACE.Println("res", res)
 	//reflect the struct instead of writing it out eveytime.
 	//assume: all strings
 	for _, v := range res {
@@ -1135,6 +1328,79 @@ func (qobj *QueryObj) GetEventsByPlayer(playerUUID string) (retval []Event) {
 
 }
 
+//gather total number games played in a month
+//input: "2014-01", player UUID
+func (qobj *QueryObj) GetPlayersTotalPlaysByMonth(month string, playeruuid string) (retval int) {
+	retval = 0
+
+	res := []map[string]int{}
+
+	prop := neoism.Props{"UUID": playeruuid, "MONTH": month}
+
+	cq := neoism.CypherQuery{
+		Statement:  `MATCH (n:Event)<-[r:PLAYED_IN]-(m:Player {UUID:{UUID}}) WHERE n.Start STARTS WITH {MONTH} return count(r)`,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+	//revel.TRACE.Println("RES", res)
+	//assume: all strings
+	//revel.TRACE.Println("retval = ", (res[0])["count(r)"])
+	if len(res) > 0 {
+		retval = (res[0])["count(r)"]
+	}
+	/*
+		for _, v := range res {
+			revel.TRACE.Println("V:", v, "REFLECT:" , reflect.TypeOf(v))
+			for ukey, u := range v {
+			revel.TRACE.Println("u:", u, "ukey:" , ukey)
+				for skey, s := range u {
+					revel.TRACE.Println("s:", s, "skey:" , skey)
+					if skey == "data" {
+						//retval = s
+					}
+
+				}
+			}
+		}
+	*/
+
+	return retval
+
+}
+
+//gather all the events in the month and year
+//input: "2014-01"
+//return list of eventuuids
+func (qobj *QueryObj) GetAllEventUUIDsByMonth(month string) (retval []string) {
+
+	res := []struct {
+		// `json:` tags matches column names in query
+		UUID string `json:"n.UUID"`
+	}{}
+
+	prop := neoism.Props{"MONTH": month}
+
+	cq := neoism.CypherQuery{
+		Statement:  `MATCH (n:Event) WHERE n.Start STARTS WITH {MONTH} return n.UUID `,
+		Parameters: prop,
+		Result:     &res,
+	}
+
+	query(&cq)
+
+	//revel.TRACE.Println("res", res)
+
+	for _, value := range res {
+
+		retval = append(retval, value.UUID)
+	}
+
+	return retval
+
+}
+
 func (qobj *QueryObj) GetAllEvents() []Event {
 
 	//var retval []Event
@@ -1172,10 +1438,10 @@ func (qobj *QueryObj) GetAllEvents() []Event {
 
 	query(&cq)
 
-	for _, node := range res {
-		revel.TRACE.Println("res", node)
-		//retval = append(retval, Event{Location: node.Location, Surname: node.Surname, UUID: node.UUID})
-	}
+	//for _, node := range res {
+	//revel.TRACE.Println("res", node)
+	//retval = append(retval, Event{Location: node.Location, Surname: node.Surname, UUID: node.UUID})
+	//}
 
 	return res
 
@@ -1209,7 +1475,7 @@ func (qobj *QueryObj) OverallGameRecord(UUID string) map[string]map[string]int {
 
 	retval := make(map[string]map[string]int)
 	for _, v := range res {
-		revel.TRACE.Println("R:", v.Result, v.Game)
+		//revel.TRACE.Println("R:", v.Result, v.Game)
 
 		if _, ok := retval[v.Game]; !ok {
 			retval[v.Game] = make(map[string]int)
@@ -1225,14 +1491,14 @@ func (qobj *QueryObj) OverallGameRecord(UUID string) map[string]map[string]int {
 			retval[v.Game][v.Result]++
 
 		}
-		revel.TRACE.Println("RETVAL", retval)
+		//revel.TRACE.Println("RETVAL", retval)
 
 	}
 
-	for k, v := range retval {
-		revel.TRACE.Println("RETVAL V", v)
-		revel.TRACE.Println("RETVAL K", k)
-	}
+	//for k, v := range retval {
+	//revel.TRACE.Println("RETVAL V", v)
+	//revel.TRACE.Println("RETVAL K", k)
+	//}
 
 	return retval
 

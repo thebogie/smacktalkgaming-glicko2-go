@@ -5,7 +5,9 @@ app.factory('stats', function () {
 	var eventcargo = "";
 	var listofuniqueplayers = [];
 	var scores = [];
+	var prettyscores = [];
 	var gamescores = [];
+	var orgplayeruuid = playerinfo.UUID;
 	
 	//for event table
 	var showeventdata = [];
@@ -25,8 +27,17 @@ app.factory('stats', function () {
 					return 0;
 			});
 		
-			for (m=0;m<topx;m++) {	
+			for (m=0;m<scores.length;m++) {	
 				retVal.push( { name:scores[m].name, record:scores[m].beatenbythem} );
+			}
+			console.log("RETVAL:", retVal);
+			
+			//pad the return
+			if (retVal.length < topx) {
+				for (j=0;j<(topx-retVal.length);j++) {
+					retVal.push( { name:"Not Enough Players", record:0} );
+				}
+				
 			}
 
 			return (retVal);
@@ -44,10 +55,18 @@ app.factory('stats', function () {
 					return 0;
 			});
 
-			for (m=0;m<topx;m++) {	
+			for (m=0;m<scores.length;m++) {	
 				retVal.push( { name:scores[m].name, record:scores[m].beatthem} );
 			}
 			
+			
+			//pad the return
+			if (retVal.length < topx) {
+				for (j=0;j<(topx-retVal.length);j++) {
+					retVal.push( { name:"Not Enough Players", record:0} );
+				}
+				
+			}
 			return (retVal);
 			
 		},
@@ -121,14 +140,18 @@ app.factory('stats', function () {
 					var temprate = {
 						name: eventcargo[i].Competitors[j].Player.Firstname + " " + eventcargo[i].Competitors[j].Player.Surname,
 						uuid: playeruuid,
-						rating: eventcargo[i].Competitors[j].Result.Place,
+						ranking: eventcargo[i].Competitors[j].Result.Place,
 						beatthem: 0,
 						beatenbythem: 0,
-						tiedthem: 0
+						tiedthem: 0,
+						rating: 0,
+						ratingdeviation: 0,
+						volatility: 0
 					};
 					
 					var uuidExists = false;
 					for (k=0;k<scores.length;k++) {
+					
 						if (scores[k].uuid == playeruuid) {
 							uuidExists = true;
 						}
@@ -139,14 +162,20 @@ app.factory('stats', function () {
 							uuid: playeruuid,
 							beatthem: 0,
 							beatenbythem: 0,
-							tiedthem: 0
+							tiedthem: 0,
+							rating: eventcargo[i].Competitors[j].Rating.Rating,
+							ratingdeviation: eventcargo[i].Competitors[j].Rating.RatingDeviation,
+							volatility: eventcargo[i].Competitors[j].Rating.Volatility,
+							prettyrating: parseInt(eventcargo[i].Competitors[j].Rating.Rating),
+							prettyratingdeviation: parseInt(eventcargo[i].Competitors[j].Rating.RatingDeviation),
+							prettyvolatility: parseFloat(eventcargo[i].Competitors[j].Rating.Volatility).toFixed(3),
+							
 						};
 						scores.push(scorehistory);
 					}
 					
 					sortA.push(temprate);
 
-					
 					var playername = 	eventcargo[i].Competitors[j].Player.Firstname + " "  +
 								eventcargo[i].Competitors[j].Player.Surname;
 								
@@ -190,10 +219,10 @@ app.factory('stats', function () {
 				
 					
 				sortA.sort(function(a, b) {
-							if (a.rating < b.rating) {
+							if (a.ranking < b.ranking) {
 								return -1;
 							}
-							if (a.rating > b.rating) {
+							if (a.ranking > b.ranking) {
 								return 1;
 							}
 							return 0;
@@ -217,7 +246,7 @@ app.factory('stats', function () {
 						}
 						if (!ratedExist) {
 							
-							scores[rated.length-1].beatenbythem++;
+							//scores[rated.length-1].beatenbythem++;
 						}  else {
 					
 							if (!foundme) {
@@ -241,8 +270,26 @@ app.factory('stats', function () {
 				
 			}
 			
+			//pretty scores
+			for (k=0;k<scores.length;k++) {
+				if (scores[k].uuid == orgplayeruuid) {
+							scores[k].prettybeatthem = "N/A";
+							scores[k].prettybeatenbythem = "N/A";
+							scores[k].prettytiedthem = "N/A";
+				} else {
+							scores[k].prettybeatthem = scores[k].beatthem;
+							scores[k].prettybeatenbythem = scores[k].beatenbythem ;
+							scores[k].prettytiedthem = scores[k].tiedthem;
+					
+					
+				}
+
+			}
+										
 			
-			console.log("gamescores", gamescores);
+			console.log("PRETTY SCORES", prettyscores);
+			
+			console.log("scores", scores);
             return true;                   
         },
 		
@@ -256,6 +303,7 @@ app.factory('stats', function () {
 		},
 		
 		getPrettyPlayerStats: function() {
+
             return scores;
 		},
 		

@@ -98,6 +98,7 @@ func (c Application) Start(uuid string) revel.Result {
 	}
 
 	playerinfo := new(models.QueryObj).GetPlayer(uuid)
+	playerrating := new(models.QueryObj).GetPlayerGlicko2Rating(playerinfo.UUID)
 
 	eventList := new(models.QueryObj).GetEventsByPlayer(uuid)
 	eventcargo := []profilecargo{}
@@ -123,7 +124,7 @@ func (c Application) Start(uuid string) revel.Result {
 
 	revel.TRACE.Println("eventcargo: ", eventcargo)
 	//events, playedins, games,
-	return c.Render(playerinfo, permission, eventcargo, games, playedins)
+	return c.Render(playerinfo, playerrating, permission, eventcargo, games, playedins)
 
 }
 

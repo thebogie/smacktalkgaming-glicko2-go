@@ -245,6 +245,12 @@ app.controller( 'OverAllStatsCtrl' , ['$scope', 'stats', function( $scope, stats
 		'total': stats.getNumberCompetitors(),
 		'title': "PLAYERS",
 	};
+	$scope.playersrating = {
+		'rating': parseInt(playerrating.Rating),
+		'ratingdeviation': parseInt(playerrating.RatingDeviation),
+		'volatility': parseFloat(playerrating.Volatility).toFixed(3),
+		
+	}
 	
 	
 	$scope.stats = {
@@ -314,6 +320,7 @@ app.controller( 'OverAllStatsCtrl' , ['$scope', 'stats', function( $scope, stats
 		eventsinfo: $scope.eventsinfo,
 		gamesinfo: $scope.gamesinfo,
 		playersinfo: $scope.playersinfo,
+		playersrating: $scope.playersrating,
 		stats: $scope.stats,
 	
 	};
@@ -325,19 +332,18 @@ app.controller('PlayersProfileCtrl', ['$scope', 'myHttpFactory', 'stats', functi
 	players = [];
 	
 	$scope.showplayers = stats.getPrettyPlayerStats();
-	console.log("showplayers", $scope.showplayers);
 	$scope.selected = [];
 
 	  $scope.query = {
 		filter: '',
-		order: '-beatthem',
+		order: '-rating',
 		limit: 10,
 		page: 1
 	  };
 
 	  
 	  $scope.compare = 		function compare(a,b) {
-				//console.log("HERE",a.Eventname,b.Eventname);
+				console.log("HERE",a.Eventname,b.Eventname);
 				if (a.name < b.name)
 					return -1;
 				if (a.name > b.name)
@@ -354,7 +360,7 @@ app.controller('PlayersProfileCtrl', ['$scope', 'myHttpFactory', 'stats', functi
 	  };
 
 	  $scope.onOrderChange = function (order) {
-
+		console.log("onOrderChange", order );
 	    //$scope.showevents = "fish";
 
 		//return $nutrition.desserts.get($scope.query, success).$promise; 
@@ -460,7 +466,10 @@ app.controller('EventsProfileCtrl', ['$scope', 'myHttpFactory', 'stats', functio
 	  };
 }]);
 
-app.controller('ProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHttpFactory) {
+
+
+app.controller('ProfileCtrl', ['$scope', '$mdDialog', 'myHttpFactory', function($scope, myHttpFactory, $mdDialog) {
+
 
 	if (typeof(playerinfo.UUID) == 'undefined') {
 		alert("plaerUUID is undefined");
@@ -487,6 +496,12 @@ app.controller('ProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHtt
 		birthdate: parseInt(playerinfo.Birthdate),
 		alignment: playerinfo.Alignment
 	};
+	
+	$scope.openProfileDialog = function (ev) {
+		
+		
+	};
+	
 	
 	$scope.update = function( playerinfodelta ) { 
 		var playercargo = playerinfo;
@@ -526,7 +541,7 @@ app.controller('ProfileCtrl', ['$scope', 'myHttpFactory', function($scope, myHtt
 
 }]);
 
-app.controller('CoolStats', ['$scope', 'myHttpFactory', '$mdDialog', 'stats', function($scope, myHttpFactory , $mdDialog, stats) {
+app.controller('CoolStats', ['$scope', 'myHttpFactory', '$mdDialog', 'stats',  function($scope, myHttpFactory , $mdDialog, stats) {
 
 
 
@@ -535,22 +550,7 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory', '$mdDialog', 'stats', fu
 	
 	$scope.shownemeses = false;
 	$scope.showdominate = false;
-	
-	
-	/* EXAMPLE of chart
-	$scope.stats =  {
-		nemesis: { 
-					labels: [],
-					series: [],
-					data: []
-		},
-		dominate: { 
-			labels: [],
-			series: [],
-			data: [] 
-		}
-	};
-	*/
+
 	
 	$scope.stats = {
 		nemesis: [
@@ -579,26 +579,6 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory', '$mdDialog', 'stats', fu
 	$scope.stats.dominate.push(domintatinglist[1]);
 	$scope.stats.dominate.push(domintatinglist[2]);
 	
-	/*
-	$scope.stats.nemesis.labels = ['nemeses'];
-	$scope.stats.nemesis.series = ['Myron', 'Olivia Builder', 'Jess'];
-	$scope.stats.nemesis.data = [
-								[3],
-										[2],
-												[1],
-	
-									];
-	$scope.stats.dominate.labels = ['dominating'];
-	$scope.stats.dominate.series = ['John', '<a>fred</a>', 'Jess'];
-	$scope.stats.dominate.data = [
-								[-3],
-										[4],
-												[2],
-	
-									];
-
- */
-
 
 	$scope.showNemeses = function () {
 		$scope.shownemeses = true;
@@ -629,9 +609,6 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory', '$mdDialog', 'stats', fu
    $scope.showStats = function(ev, choice) {
 		
 		var dialogURL = "";
-		
-		
-		
 		
 		switch(choice) {
 			case "nemeses":
@@ -666,6 +643,29 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory', '$mdDialog', 'stats', fu
         });
 	};
 	
+	$scope.labels = ["January", "February", "March", "April", "May", "June", "July"];
+		  $scope.series = ['Series A', 'Series B'];
+		  $scope.data = [
+			[65, 59, 80, 81, 56, 55, 40],
+			[28, 48, 40, 19, 86, 27, 90]
+		  ];
+		  $scope.onClick = function (points, evt) {
+			console.log(points, evt);
+		  };
+	
+	
+	$scope.showRatingHistory = function(ev) {
+		console.log("ShowRatingHistory", ev);
+		
+          $mdDialog.show({	
+			clickOutsideToClose: true,
+			targetEvent: ev,
+			templateUrl:'/public/js/app/controllers/stats/ratinghistory.html',
+			controller: 'CoolStats'
+        });
+		
+	};
+	
 	
 
 }]);
@@ -677,15 +677,126 @@ app.controller('CoolStats', ['$scope', 'myHttpFactory', '$mdDialog', 'stats', fu
 app.controller( 'EventCtrl' ,  ['$scope', 'myHttpFactory' , 'event' , '$window' , function( $scope  , myHttpFactory, event, $window ) {
 
 	console.log("event controller");
-	$scope.showAskQuestions = true;
-	$scope.showPassedChecks = false;
+	$scope.recordable = {games:false,players:false,location:false};
+	$scope.showInputMenu = true;
 	
-	$scope.goback = function() {
+	$scope.showGameSetting = false;
+	$scope.showPlayerSetting = false;
+	$scope.showLocationSetting = false;
 	
-		$scope.showAskQuestions = true;
+	$scope.showRecordButton = false;
+	
+	$scope.lockSetGames = "#FFF";
+	$scope.lockSetPlayers = "#FFF";
+	$scope.lockSetLocation = "#FFF";
+	
+	
+	$scope.clickMenu = function(action) {
+		console.log("action:", action);
 		
-		$scope.showPassedChecks = false;
+		
+		switch(action) {
+			case "SetGames":
+				$scope.showInputMenu = false;
+				$scope.showGameSetting = true;
+				$scope.showPlayerSetting = false;
+				$scope.showLocationSetting = false;
+				$scope.showgames = event.getList("gameList");
+			break;
+			case "SetPlayers":
+				$scope.showInputMenu = false;
+				$scope.showGameSetting = false;
+				$scope.showPlayerSetting = true;
+				$scope.showLocationSetting = false;
+				$scope.showplayers = event.getList("playerList");
+			break;
+			case "SetLocation":
+				$scope.startdisplay =  event.getEvent().Start; 
+				$scope.stopdisplay = event.getEvent().Stop;
+				
+				console.log("STARTDISPALY", startdisplay, event.getEvent().Start);
+				$scope.showlocations = event.getList("locationList");
+				$scope.showInputMenu = false;
+				$scope.showGameSetting = false;
+				$scope.showPlayerSetting = false;
+				$scope.showLocationSetting = true;
+
+				
+			break;
+		
+		};
+		
+	};
 	
+	
+	$scope.cleandate = function(datetouse) {
+		console.log("datetouse", datetouse);
+		var currentDate = new Date(datetouse);
+
+		var Day = currentDate.getDate();
+        if (Day < 10) {
+            Day = '0' + Day;
+        } //end if
+        var Month = currentDate.getMonth() + 1;
+        if (Month < 10) {
+            Month = '0' + Month;
+        } //end if
+        var Year = currentDate.getFullYear();
+        var fullDate = Month + '/' + Day + '/' + Year;
+		
+		
+		var Minutes = currentDate.getMinutes();
+        if (Minutes < 10) {
+            Minutes = '0' + Minutes;
+        }
+        var Hour = currentDate.getHours();
+        if (Hour > 12) {
+            Hour -= 12;
+        } //end if
+        var Time = Hour + ':' + Minutes;
+        if (currentDate.getHours() <= 12) {
+            Time += ' AM';
+        } //end if
+        if (currentDate.getHours() > 12) {
+            Time += ' PM';
+        } //end if
+		
+		
+		return fullDate + " " + Time;
+	};
+	
+	$scope.displayInputMenu = function(action) {
+		
+		
+		$scope.showInputMenu = true;
+		$scope.showGameSetting = false;
+		$scope.showPlayerSetting = false;
+		$scope.showLocationSetting = false;
+		
+		switch(action) {
+			case "SetGames":
+				$scope.lockSetGames = "#CCC";
+				$scope.recordable["games"] = true;
+			break;
+			case "SetPlayers":
+				$scope.lockSetPlayers = "#CCC";
+				$scope.recordable["players"] = true;
+			break;
+			case "SetLocation":
+				$scope.lockSetLocation = "#CCC";
+				$scope.recordable["location"] = true;
+				
+				$scope.startdisplay = $scope.cleandate(event.getEvent().Start);
+				$scope.stopdisplay = $scope.cleandate(event.getEvent().Stop);
+			break;
+		
+		};
+
+		console.log("recordable?", $scope.recordable);
+		if ( Object.keys($scope.recordable).every(function(k){ return $scope.recordable[k] === true })) {
+			$scope.showRecordButton = true;
+		}
+		
 	};
 	
 	$scope.recordIt = function() {
@@ -716,6 +827,7 @@ app.controller( 'EventCtrl' ,  ['$scope', 'myHttpFactory' , 'event' , '$window' 
 	$scope.$on('RecordStage',function(){
 		console.log("RecordStage");
 		//inform the event to show record button
+		$scope.showInputMenu = false;
 		$scope.showAskQuestions = false;
 		//TODO: check each part that the basics passed
 		$scope.showPassedChecks = true;
@@ -865,12 +977,18 @@ app.controller( 'PlayerCtrl' , ['$scope', 'myHttpFactory', 'event',  function(  
 
 app.controller( 'LocationDateTimeCtrl' , ['$scope', 'event', 'myHttpFactory', function( $scope , event, myHttpFactory) {
 
-	
 
+	$scope.showNewLocation = true;
+	$scope.showLastLocation = true;
+	$scope.showNewLocationButton = true;
+	$scope.showChosenLocation = false;
+	$scope.showLockLocationTime = false;
+	$scope.displayLocation  = "";
 
 
 	$scope.startDateTime = 0;
 	$scope.stopDateTime = 0;
+	$scope.lastlocationlist = 0;
 	
 	$scope.lockedStartDate = 0;
 	$scope.lockedStopDate = 0;
@@ -918,120 +1036,162 @@ app.controller( 'LocationDateTimeCtrl' , ['$scope', 'event', 'myHttpFactory', fu
 
 	$scope.minutes = ["00","05","10","15","20","25","30","35","40","45","50","55"];
 	
-	$scope.hideDateTime = true;
-	
-	
-	$scope.setLastLocation = function() {
+	$scope.showDateTime = true;
 
+	
+
+	
+	
+	$scope.testclick = function(){
+		console.log("CAUGHT!?", $scope.gPlace );
+		
+	};
+	
+	$scope.getLastLocation = function() {
+		console.log("Get Last Location:")
 		return myHttpFactory.getLastLocation(playerinfo.UUID).then(function(data) {
-			$scope.chosenPlace =  data;
+			
+			$scope.lastlocationlist = data;
+			event.addList(data, "locationList");
+	
 		});
 		
 	
 	};
 	
-	$scope.lockStartTime = function( start) {
-		console.log("start button clicked", start);
+	$scope.timeschanged = function(choice) {
 		
-		var pickeddate = moment(start.PickedDate).format('YYYY-MM-DD');
-		
-		$scope.lockedStartDate = moment.tz(pickeddate + " " + start.hour + ":" + start.minute + " ", "YYYY-MM-DD HH:mm", start.offset);
-		
-		$scope.lockedStopDate = $scope.lockedStartDate.clone();
-		$scope.lockedStopDate.add(1, 'hour');
-		
-		console.log("locked date", $scope.lockedStartDate);
-	
-		$scope.startButton = $scope.lockedStartDate.format("YYYY-MM-DD HH:mm");
-		$scope.classState= "md-raised ";
-		
-		//TODO: make stop time AVG TIME OF GAME 
-		// for now just add an hour
-		$scope.stop.hour = $scope.lockedStopDate.hour();
-		$scope.stop.minute = $scope.minutes[(Math.floor(($scope.lockedStopDate.minute())/5))];
-		$scope.stop.PickedDate = new Date($scope.lockedStartDate.format('MM-DD-YYYY'));
-		
-		event.setStartDate($scope.lockedStartDate.format());
 
-		
-	
-	};
-	$scope.lockStopTime = function( stop) {
-		console.log("stop button clicked", stop);
-		
-		var pickeddate = moment(stop.PickedDate).format('YYYY-MM-DD');
-		
-		$scope.lockedStopDate = moment.tz(pickeddate + " " + stop.hour + ":" + stop.minute + " ", "YYYY-MM-DD HH:mm", $scope.start.offset);
-		
-		$scope.stopButton = $scope.lockedStopDate.format("YYYY-MM-DD HH:mm");;
-		$scope.stopclassState= "md-raised md-no-ink";
-		
-		event.setStopDate($scope.lockedStopDate.format());
 			
-		$scope.$emit("RecordStage");
+			if (choice == "STOP") {
+				
+				
+				var pickeddate = moment($scope.stop.PickedDate).format('YYYY-MM-DD');
+				$scope.lockedStopDate = moment.tz(pickeddate + " " + $scope.stop.hour + ":" + $scope.stop.minute + " ", "YYYY-MM-DD HH:mm", $scope.start.offset);
+				event.setStopDate($scope.lockedStopDate.format());
+			}
+			if (choice == "START") {
+				
+				var pickeddate = moment($scope.start.PickedDate).format('YYYY-MM-DD');
+				$scope.lockedStartDate = moment.tz(pickeddate + " " + $scope.start.hour + ":" + $scope.start.minute + " ", "YYYY-MM-DD HH:mm", $scope.start.offset);
+				event.setStartDate($scope.lockedStartDate.format());
+			}
+			
+			console.log("TIME UPDATED:", event.getEvent().Start, event.getEvent().Stop );
 		
-		$scope.stopclassState= "";
-		$scope.classState= "";
+			
+	};
+	
+	$scope.initTime = function() {
 
-	
+		//assume the location list is correct
+		currentloc = event.getList("locationList")[0];
+		console.log("INIT TIME CURRENT LOCATION", currentloc);
+			
+		$scope.startDateTime = moment.tz(new Date(), currentloc.Locationtz);
+		$scope.stopDateTime = moment.tz(new Date(), currentloc.Locationtz);
+			
+		minutes = Math.floor(($scope.startDateTime.minute())/5);
+		
+			
+		$scope.start.hour = $scope.startDateTime.hour();
+		$scope.start.minute = $scope.minutes[minutes];
+		$scope.start.PickedDate = new Date($scope.startDateTime.format('MM-DD-YYYY'));
+			
+				
+		if (($scope.stopDateTime.hour() + 1) == 24) {
+			$scope.stop.hour = 0;
+			$scope.stopDateTime = $scope.stopDateTime.add(1, 'days');
+			//$scope.stopDateTime.day() = $scope.stopDateTime.day() + 1;
+		} else {
+			$scope.stop.hour = $scope.stopDateTime.hour() + 1;
+		}
+		$scope.stop.minute = $scope.minutes[minutes];
+		$scope.stop.PickedDate = new Date($scope.stopDateTime.format('MM-DD-YYYY'));
+			
+		$scope.start.offset = currentloc.Locationtz;
+			
+		$scope.timeschanged("STOP");
+		$scope.timeschanged("START");
+			
+		$scope.showDateTime = true;
+		//$scope.showLockLocationTime = true;
+		
 	};
 	
-	
-	$scope.startChange = function () {
-		$scope.classState= "";
-		$scope.startButton=startButtonText;
-	
-	};
-	$scope.stopChange = function () {
-		$scope.stopclassState= "";
-		$scope.stopButton=stopButtonText;
-	
-	};
-	
-	$scope.onClick = function () {
+	$scope.onClick = function (choice) {
+		//TODO: 
+		/*
+			take apart time and location. this click should be only for setting up location in eventlist
+			
+			if lastlocation was chosen and timezone isnt empty, then use lastlocation time zone 
+				event.addList(lastlocation node, "locationList");
+			else 
+				get timezone and then event.addList(currentloc, "locationList");
+		
+			init time quesions
+		*/
+		
+		pickedLocation = event.getList("locationList");	
+		
+		console.log("pickedLocation: ", pickedLocation.Locationname);
 		
 		
-		currentloc = event.getList("locationList");	
-		console.log("CUrrentLoc: ", currentloc);
-		//$scope.startDateTime = Date.now();
+		if (choice == "lastlocation") {
+			console.log("LAST LOCATION");
+
+			$scope.showNewLocation = false;
+			$scope.showLastLocation = false;
+			$scope.showChosenLocation = true;
+			$scope.showLockLocationTime = true;
+		}		
+			
+		if (choice == "newlocation") {
+			console.log("NEW LOCATION");
+			$scope.showNewLocation = false;
+			$scope.showLastLocation = false;
+			$scope.showChosenLocation = true;
+			$scope.showLockLocationTime = true;
+		}
 		
-		mapsString = "https://maps.googleapis.com/maps/api/timezone/json?location="+currentloc[0].Locationlat+","+currentloc[0].Locationlng+"&timestamp="+$scope.startDateTime/1000+"&sensor=false&key=AIzaSyCXSL3n9tI-VTgRJOhXqJJJ42D1FO1EGBE";
-	
-	
-		$scope.startChange();
-		$scope.stopChange();
-	
-		return myHttpFactory.httpTimeZoneOffset( mapsString).then(function(result) {
-			
-			currentloc = event.getList("locationList")[0];
-			console.log("BEFORE", currentloc);
-			
-			$scope.startDateTime = moment.tz(new Date(), result);
-			
-			currentloc.Locationtz = result;
-			console.log("Locationtz", currentloc.Locationtz);
-			
-			event.addList(currentloc, "locationList");
-			
-			currentloc = event.getList("locationList")[0];
-			console.log("AFTER", currentloc);
-			
-			
-			console.log("MOMENT TZ DATETIME", $scope.startDateTime.format());
-			console.log("MOMENT TZ HOUR",$scope.hours[$scope.startDateTime.hour()]);
-			console.log("MOMENT TZ minute", $scope.startDateTime.minute());
-			
-			
-			$scope.start.hour = $scope.startDateTime.hour();
-			$scope.start.minute = $scope.minutes[(Math.floor(($scope.startDateTime.minute())/5))];
-			$scope.start.PickedDate = new Date($scope.startDateTime.format('MM-DD-YYYY'));
-			
-			
-			console.log("start.pickedadate", $scope.start.PickedDate );
-			
-			$scope.start.offset = currentloc.Locationtz;
+		if (choice == "reset") {
+			console.log("Start over");
+			$scope.showNewLocation = true;
+			$scope.showLastLocation = true;
+			$scope.showChosenLocation = false;
+			$scope.showLockLocationTime = false;
+					
+		}
 		
-			$scope.hideDateTime = false;
+		if (pickedLocation.Locationtz != undefined ) {
+			//the tz is already there!
+			$scope.displayLocation  = pickedLocation.Locationname;
+			return;
+		}
+		
+		mapsString = {
+			lat: pickedLocation[0].Locationlat,
+			lng: pickedLocation[0].Locationlng,
+			timestamp: "0",
+			
+		};
+		
+		return myHttpFactory.httpGoogleAPITimeZoneOffset(mapsString).then(function(result) {
+		//return myHttpFactory.httpTimeZoneOffset( mapsString).then(function(result) {
+			console.log("RESULT:",  result.data);
+			pickedLocation = event.getList("locationList")[0];
+			
+			$scope.startDateTime = moment.tz(new Date(), result.data.timezone);
+			$scope.stopDateTime = moment.tz(new Date(),  result.data.timezone);
+			
+			pickedLocation.Locationtz = result.data.timezone;
+			event.addList(pickedLocation, "locationList");
+			
+			pickedLocation = event.getList("locationList")[0];
+			console.log("******AFTER**********", pickedLocation);
+			$scope.displayLocation = pickedLocation.Locationname;
+			$scope.initTime();
+			
 		});
 
 		

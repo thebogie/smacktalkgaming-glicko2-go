@@ -13,6 +13,10 @@ URLgamesadd = typeof(URLgamesadd) == 'undefined' ? 0 : URLgamesadd;
 
 URLstats = typeof(URLstats) == 'undefined' ? 0 : URLstats;
 
+
+//google keys
+timezoneMapKey = "&key=AIzaSyCXSL3n9tI-VTgRJOhXqJJJ42D1FO1EGBE";
+geocodeMapKey = "&AIzaSyBvMnC_gxM_viymDC-Et4Jfr9UEMO9l-Hg";
 //
 //var ;
 //var ;
@@ -99,6 +103,15 @@ app.factory('myHttpFactory', ['$http' ,'$filter',function($http, $filter) {
 				return result.data.timeZoneId;
 				//return parseInt(result.data.dstOffset + result.data.rawOffset) / 60;
 			});
-	   }
+	   } ,
+	   	httpGoogleAPITimeZoneOffset: function(mapstring) {
+
+			return $http({method: 'POST', 
+					url: '/stats/gapitimez/',  
+					data:$filter('json')(mapstring) 
+					}).then(function(data, status, headers, config) {
+					 return data;
+			}); 
+	 }
 	}
 }]);
